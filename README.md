@@ -14,9 +14,14 @@ curl -LsSf https://raw.githubusercontent.com/tonywang0122/house-search-mcp/main/
 irm https://raw.githubusercontent.com/tonywang0122/house-search-mcp/main/install.ps1 | iex
 ```
 
-> 如果遇到 ExecutionPolicy 錯誤，改用：
+> 如果遇到 ExecutionPolicy 錯誤：
 > ```powershell
+> # 方法 A：只對這次生效（推薦）
 > powershell -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/tonywang0122/house-search-mcp/main/install.ps1 | iex"
+>
+> # 方法 B：永久放行（需管理員權限）
+> Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+> # 然後重跑安裝指令
 > ```
 
 自動偵測並設定：Claude Desktop（含 Store 版）+ Codex CLI。
