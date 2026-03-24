@@ -4,7 +4,8 @@
 set -e
 
 PACKAGE="house-search-mcp"
-SERVER_NAME="買屋快搜"
+CLAUDE_SERVER_NAME="買屋快搜"
+CODEX_SERVER_NAME="house-search"  # Codex CLI 只接受英數字、- 和 _
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 RED='\033[0;31m'
@@ -59,7 +60,7 @@ if [ -n "$CLAUDE_DIR" ]; then
 import json
 with open('$CLAUDE_FILE', 'r') as f:
     config = json.load(f)
-config.setdefault('mcpServers', {})['$SERVER_NAME'] = {
+config.setdefault('mcpServers', {})['$CLAUDE_SERVER_NAME'] = {
     'command': '$UVX_PATH',
     'args': ['$PACKAGE']
 }
@@ -71,7 +72,7 @@ with open('$CLAUDE_FILE', 'w') as f:
         cat > "$CLAUDE_FILE" << EOF
 {
   "mcpServers": {
-    "$SERVER_NAME": {
+    "$CLAUDE_SERVER_NAME": {
       "command": "$UVX_PATH",
       "args": ["$PACKAGE"]
     }
@@ -94,8 +95,8 @@ echo -e "${YELLOW}[Step 3]${NC} 設定 Codex CLI..."
 if command -v codex &>/dev/null; then
     echo -e "  ${GREEN}✓${NC} Codex CLI 已安裝"
     # 用 codex mcp add 指令（如果已存在會報錯，先移除再加）
-    codex mcp remove "$SERVER_NAME" 2>/dev/null || true
-    codex mcp add "$SERVER_NAME" -- "$UVX_PATH" "$PACKAGE" 2>&1 && {
+    codex mcp remove "$CODEX_SERVER_NAME" 2>/dev/null || true
+    codex mcp add "$CODEX_SERVER_NAME" -- "$UVX_PATH" "$PACKAGE" 2>&1 && {
         echo -e "  ${GREEN}✓${NC} Codex CLI MCP 已設定"
         INSTALLED="${INSTALLED}Codex CLI, "
     } || {
@@ -103,10 +104,10 @@ if command -v codex &>/dev/null; then
         CODEX_CONFIG="$HOME/.codex/config.toml"
         if [ -f "$CODEX_CONFIG" ]; then
             # 檢查是否已有此 server
-            if ! grep -q "mcp_servers.${SERVER_NAME}" "$CODEX_CONFIG" 2>/dev/null; then
+            if ! grep -q "mcp_servers.${CODEX_SERVER_NAME}" "$CODEX_CONFIG" 2>/dev/null; then
                 cat >> "$CODEX_CONFIG" << EOF
 
-[mcp_servers."$SERVER_NAME"]
+[mcp_servers.${CODEX_SERVER_NAME}]
 command = "$UVX_PATH"
 args = ["$PACKAGE"]
 EOF

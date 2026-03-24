@@ -5,7 +5,8 @@
 $ErrorActionPreference = "Stop"
 
 $PACKAGE = "house-search-mcp"
-$SERVER_NAME = "買屋快搜"
+$CLAUDE_SERVER_NAME = "買屋快搜"
+$CODEX_SERVER_NAME = "house-search"  # Codex CLI 只接受英數字、- 和 _
 $installed = @()
 
 Write-Host ""
@@ -90,14 +91,14 @@ try {
         if (-not $config.mcpServers) {
             $config | Add-Member -NotePropertyName "mcpServers" -NotePropertyValue ([PSCustomObject]@{})
         }
-        if ($config.mcpServers.PSObject.Properties[$SERVER_NAME]) {
-            $config.mcpServers.$SERVER_NAME = $newServer
+        if ($config.mcpServers.PSObject.Properties[$CLAUDE_SERVER_NAME]) {
+            $config.mcpServers.$CLAUDE_SERVER_NAME = $newServer
         } else {
-            $config.mcpServers | Add-Member -NotePropertyName $SERVER_NAME -NotePropertyValue $newServer
+            $config.mcpServers | Add-Member -NotePropertyName $CLAUDE_SERVER_NAME -NotePropertyValue $newServer
         }
         $config | ConvertTo-Json -Depth 10 | Set-Content $configFile -Encoding UTF8
     } else {
-        @{ mcpServers = @{ $SERVER_NAME = @{ command = $serverCommand; args = $serverArgs } } } |
+        @{ mcpServers = @{ $CLAUDE_SERVER_NAME = @{ command = $serverCommand; args = $serverArgs } } } |
             ConvertTo-Json -Depth 10 | Set-Content $configFile -Encoding UTF8
     }
     Write-Host "  [OK] Claude Desktop 設定完成: $configFile" -ForegroundColor Green
@@ -127,16 +128,16 @@ if ($codexCmd) {
     }
 
     try {
-        & codex mcp remove $SERVER_NAME 2>$null
-        & codex mcp add $SERVER_NAME -- $uvxPath $PACKAGE 2>&1
+        & codex mcp remove $CODEX_SERVER_NAME 2>$null
+        & codex mcp add $CODEX_SERVER_NAME -- $uvxPath $PACKAGE 2>&1
         Write-Host "  [OK] Codex CLI MCP 設定完成（via codex mcp add）" -ForegroundColor Green
         $installed += "Codex CLI"
     } catch {
         Write-Host "  [WARN] codex mcp add 失敗，嘗試寫 config.toml..." -ForegroundColor Yellow
         if (Test-Path $codexConfig) {
             $content = Get-Content $codexConfig -Raw
-            if ($content -notmatch "mcp_servers.*$SERVER_NAME") {
-                $tomlBlock = "`n[mcp_servers.`"$SERVER_NAME`"]`ncommand = `"$uvxPath`"`nargs = [`"$PACKAGE`"]`n"
+            if ($content -notmatch "mcp_servers.*$CODEX_SERVER_NAME") {
+                $tomlBlock = "`n[mcp_servers.$CODEX_SERVER_NAME]`ncommand = `"$uvxPath`"`nargs = [`"$PACKAGE`"]`n"
                 Add-Content $codexConfig $tomlBlock
                 Write-Host "  [OK] Codex config.toml 已更新: $codexConfig" -ForegroundColor Green
                 $installed += "Codex CLI"
