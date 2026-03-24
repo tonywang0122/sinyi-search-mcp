@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>板橋三房物件 — 預算 1,800 萬以內</title>
+<style>
+  :root {
+    --primary: #2563eb;
+    --primary-light: #dbeafe;
+    --green: #16a34a;
+    --green-light: #dcfce7;
+    --orange: #ea580c;
+    --orange-light: #fff7ed;
+    --red: #dc2626;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-500: #6b7280;
+    --gray-700: #374151;
+    --gray-900: #111827;
+    --shadow: 0 1px 3px rgba(0,0,0,.1), 0 1px 2px rgba(0,0,0,.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -2px rgba(0,0,0,.05);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans TC", sans-serif;
+    background: var(--gray-50);
+    color: var(--gray-900);
+    line-height: 1.6;
+  }
+  .header {
+    background: linear-gradient(135deg, #1e40af, #3b82f6);
+    color: #fff;
+    padding: 2rem 1rem;
+    text-align: center;
+  }
+  .header h1 { font-size: 1.75rem; margin-bottom: .5rem; }
+  .header p { opacity: .85; font-size: .95rem; }
+  .summary {
+    max-width: 1200px; margin: 1.5rem auto; padding: 0 1rem;
+    display: flex; gap: 1rem; flex-wrap: wrap;
+  }
+  .summary .stat {
+    background: #fff; border-radius: 12px; padding: 1rem 1.5rem;
+    box-shadow: var(--shadow); flex:1; min-width: 140px; text-align:center;
+  }
+  .stat .num { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+  .stat .label { font-size: .8rem; color: var(--gray-500); margin-top: 2px; }
+  .section-title {
+    max-width: 1200px; margin: 2rem auto .75rem; padding: 0 1rem;
+    font-size: 1.2rem; font-weight: 700;
+    display: flex; align-items: center; gap: .5rem;
+  }
+  .section-title .badge {
+    font-size: .75rem; padding: 2px 10px; border-radius: 99px;
+    background: var(--green-light); color: var(--green); font-weight: 600;
+  }
+  .grid {
+    max-width: 1200px; margin: 0 auto; padding: 0 1rem;
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 1rem;
+  }
+  .card {
+    background: #fff; border-radius: 14px; overflow: hidden;
+    box-shadow: var(--shadow); transition: box-shadow .2s, transform .2s;
+    display: flex; flex-direction: column;
+  }
+  .card:hover { box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+  .card-img {
+    width: 100%; height: 210px; object-fit: cover; background: var(--gray-100);
+    display: block;
+  }
+  .card-img-placeholder {
+    width: 100%; height: 210px; background: linear-gradient(135deg, var(--gray-100), var(--gray-200));
+    display: flex; align-items: center; justify-content: center;
+    color: var(--gray-500); font-size: .9rem;
+  }
+  .card-body { padding: 1rem 1.25rem 1.25rem; flex:1; display: flex; flex-direction: column; }
+  .card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: .5rem; }
+  .card-name { font-size: 1.05rem; font-weight: 700; line-height: 1.4; }
+  .card-price { font-size: 1.2rem; font-weight: 800; color: var(--red); white-space: nowrap; margin-left: .5rem; }
+  .card-price .original { font-size: .75rem; color: var(--gray-500); text-decoration: line-through; font-weight: 400; display:block; text-align:right; }
+  .card-price .discount { font-size: .7rem; color: var(--green); font-weight: 600; }
+  .card-address { font-size: .85rem; color: var(--gray-500); margin-bottom: .75rem; }
+  .info-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: .4rem .75rem;
+    font-size: .82rem; margin-bottom: .75rem;
+  }
+  .info-item { display: flex; flex-direction: column; }
+  .info-item .info-label { color: var(--gray-500); font-size: .7rem; }
+  .info-item .info-value { font-weight: 600; }
+  .tags { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: .75rem; }
+  .tag {
+    font-size: .7rem; padding: 2px 8px; border-radius: 99px;
+    background: var(--gray-100); color: var(--gray-700);
+  }
+  .tag.highlight { background: var(--primary-light); color: var(--primary); font-weight: 600; }
+  .tag.mgmt { background: var(--green-light); color: var(--green); font-weight: 600; }
+  .tag.market { background: var(--orange-light); color: var(--orange); font-weight: 600; }
+  .nearby-section { font-size: .8rem; margin-bottom: .75rem; }
+  .nearby-section strong { display: block; margin-bottom: 2px; font-size: .75rem; color: var(--gray-500); }
+  .nearby-list { list-style: none; }
+  .nearby-list li { padding: 1px 0; }
+  .nearby-list li::before { content: "📍"; margin-right: 4px; font-size: .7rem; }
+  .card-footer { margin-top: auto; display: flex; gap: .5rem; }
+  .btn {
+    flex: 1; text-align: center; padding: .6rem; border-radius: 8px;
+    text-decoration: none; font-size: .85rem; font-weight: 600;
+    transition: background .15s;
+  }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { background: #1d4ed8; }
+  .btn-outline { background: #fff; color: var(--primary); border: 1.5px solid var(--primary); }
+  .btn-outline:hover { background: var(--primary-light); }
+  .watchers { font-size: .75rem; color: var(--gray-500); margin-bottom: .5rem; }
+  .watchers span { font-weight: 600; color: var(--orange); }
+  .agent-info { font-size: .78rem; color: var(--gray-500); margin-bottom: .5rem; }
+  .agent-info strong { color: var(--gray-700); }
+  footer {
+    text-align: center; padding: 2rem; margin-top: 2rem;
+    color: var(--gray-500); font-size: .8rem; border-top: 1px solid var(--gray-200);
+  }
+  @media (max-width: 480px) {
+    .grid { grid-template-columns: 1fr; }
+    .info-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>板橋三房物件搜尋結果</h1>
+  <p>預算 1,800 萬以內 ・ 近市場 ・ 共 29 筆</p>
+</div>
+
+<div class="summary">
+  <div class="stat"><div class="num">29</div><div class="label">符合物件</div></div>
+  <div class="stat"><div class="num">3</div><div class="label">有管理員 (推薦)</div></div>
+  <div class="stat"><div class="num">928~1,798</div><div class="label">價格區間 (萬)</div></div>
+  <div class="stat"><div class="num">15~27</div><div class="label">坪數區間</div></div>
+</div>
+
+<!-- ===== 推薦：有警衛管理 ===== -->
+<div class="section-title">有管理員（可代收貨運）<span class="badge">推薦</span></div>
+<div class="grid">
+
+  <!-- 8668SF -->
+  <div class="card">
+    <div class="card-img-placeholder" style="background:linear-gradient(135deg,#e0f2fe,#bfdbfe);position:relative">
+      <div style="text-align:center">
+        <div style="font-size:2.5rem">🏢</div>
+        <div style="margin-top:6px;font-weight:600;color:#1e40af">綠寶石社區</div>
+        <div style="font-size:.8rem;color:#3b82f6">大樓 8/11F ・ 邊間</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="card-top">
+        <div class="card-name">亞東捷運－綠寶石夢幻３房</div>
+        <div class="card-price">1,650 萬</div>
+      </div>
+      <div class="card-address">新北市板橋區四川路二段</div>
+      <div class="info-grid">
+        <div class="info-item"><span class="info-label">格局</span><span class="info-value">3房2廳2衛</span></div>
+        <div class="info-item"><span class="info-label">建坪</span><span class="info-value">25.35 坪</span></div>
+        <div class="info-item"><span class="info-label">主+陽</span><span class="info-value">17.54 坪</span></div>
+        <div class="info-item"><span class="info-label">屋齡</span><span class="info-value">27.8 年</span></div>
+        <div class="info-item"><span class="info-label">管理</span><span class="info-value" style="color:#16a34a">全天候</span></div>
+        <div class="info-item"><span class="info-label">管理費</span><span class="info-value">1,521/月</span></div>
+      </div>
+      <div class="tags">
+        <span class="tag mgmt">警衛管理</span>
+        <span class="tag market">近市場</span>
+        <span class="tag highlight">近超市</span>
+        <span class="tag highlight">有電梯</span>
+        <span class="tag">有裝潢</span>
+        <span class="tag">有景觀</span>
+        <span class="tag">前後陽台</span>
+        <span class="tag">廁所開窗</span>
+        <span class="tag">房間皆有窗</span>
+        <span class="tag">花園</span>
+      </div>
+      <div class="nearby-section">
+        <strong>周邊市場/超市</strong>
+        <ul class="nearby-list">
+          <li>家樂福超市 — 160m</li>
+          <li>美廉社 — 221m</li>
+          <li>美廉社 — 327m</li>
+        </ul>
+      </div>
+      <div class="watchers">👀 <span>600</span> 人關注</div>
+      <div class="agent-info">經紀人：<strong>李宏哲</strong>（板新捷運店）・ 0987-912-951</div>
+      <div class="card-footer">
+        <a class="btn btn-primary" href="https://www.sinyi.com.tw/buy/house/8668SF" target="_blank">查看詳情 & 照片</a>
+        <a class="btn btn-outline" href="https://sinyi.in/o/8668SF/0/3" target="_blank">分享</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3796PV -->
+  <div class="card">
+    <div class="card-img-placeholder" style="background:linear-gradient(135deg,#fef3c7,#fde68a);position:relative">
+      <div style="text-align:center">
+        <div style="font-size:2.5rem">🏢</div>
+        <div style="margin-top:6px;font-weight:600;color:#92400e">江翠捷運旁</div>
+        <div style="font-size:.8rem;color:#b45309">大樓 11/20F ・ SRC鋼骨</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="card-top">
+        <div class="card-name">江翠捷運～大人國優質推薦</div>
+        <div class="card-price">1,798 萬</div>
+      </div>
+      <div class="card-address">新北市板橋區文化路二段</div>
+      <div class="info-grid">
+        <div class="info-item"><span class="info-label">格局</span><span class="info-value">3房1廳2衛</span></div>
+        <div class="info-item"><span class="info-label">建坪</span><span class="info-value">18.92 坪</span></div>
+        <div class="info-item"><span class="info-label">主+陽</span><span class="info-value">12.88 坪</span></div>
+        <div class="info-item"><span class="info-label">屋齡</span><span class="info-value">28.6 年</span></div>
+        <div class="info-item"><span class="info-label">管理</span><span class="info-value" style="color:#16a34a">全天候</span></div>
+        <div class="info-item"><span class="info-label">管理費</span><span class="info-value">1,350/月</span></div>
+      </div>
+      <div class="tags">
+        <span class="tag mgmt">警衛管理</span>
+        <span class="tag market">近市場</span>
+        <span class="tag highlight">近捷運</span>
+        <span class="tag highlight">近超市</span>
+        <span class="tag highlight">有電梯</span>
+        <span class="tag">廁所開窗</span>
+        <span class="tag">健身房</span>
+        <span class="tag">近公園</span>
+      </div>
+      <div class="nearby-section">
+        <strong>周邊市場/超市</strong>
+        <ul class="nearby-list">
+          <li>全聯福利中心 — 90m</li>
+          <li>家樂福超市 — 167m</li>
+          <li>全聯福利中心 — 392m</li>
+        </ul>
+      </div>
+      <div class="watchers">👀 <span>593</span> 人關注 ・ ⚠️ 用途為辦公室（商業區）</div>
+      <div class="agent-info">經紀人：<strong>蔡易達</strong>（板新捷運店）・ 0987-188-949</div>
+      <div class="card-footer">
+        <a class="btn btn-primary" href="https://www.sinyi.com.tw/buy/house/3796PV" target="_blank">查看詳情 & 照片</a>
+        <a class="btn btn-outline" href="https://sinyi.in/o/3796PV/0/3" target="_blank">分享</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4433BT -->
+  <div class="card">
+    <div class="card-img-placeholder" style="background:linear-gradient(135deg,#f0fdf4,#bbf7d0);position:relative">
+      <div style="text-align:center">
+        <div style="font-size:2.5rem">🏙️</div>
+        <div style="margin-top:6px;font-weight:600;color:#166534">巨蛋社區</div>
+        <div style="font-size:.8rem;color:#15803d">大樓 36/37F ・ 鋼骨結構</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="card-top">
+        <div class="card-name">巨蛋花園天際景觀</div>
+        <div class="card-price">
+          1,248 萬
+          <span class="original">1,298 萬</span>
+          <span class="discount">降 3.85%</span>
+        </div>
+      </div>
+      <div class="card-address">新北市板橋區民生路三段</div>
+      <div class="info-grid">
+        <div class="info-item"><span class="info-label">格局</span><span class="info-value">3房1廳1衛</span></div>
+        <div class="info-item"><span class="info-label">建坪</span><span class="info-value">15.44 坪</span></div>
+        <div class="info-item"><span class="info-label">主+陽</span><span class="info-value">10.8 坪</span></div>
+        <div class="info-item"><span class="info-label">屋齡</span><span class="info-value">19.5 年</span></div>
+        <div class="info-item"><span class="info-label">管理</span><span class="info-value" style="color:#16a34a">全天候</span></div>
+        <div class="info-item"><span class="info-label">管理費</span><span class="info-value">926/月</span></div>
+      </div>
+      <div class="tags">
+        <span class="tag mgmt">警衛管理</span>
+        <span class="tag market">近市場</span>
+        <span class="tag highlight">近捷運</span>
+        <span class="tag highlight">近超市</span>
+        <span class="tag highlight">有電梯</span>
+        <span class="tag">有裝潢</span>
+        <span class="tag">有景觀</span>
+        <span class="tag">房間皆有窗</span>
+      </div>
+      <div class="nearby-section">
+        <strong>周邊市場/超市</strong>
+        <ul class="nearby-list">
+          <li>全聯福利中心 — 76m</li>
+          <li>家樂福超市 — 380m</li>
+          <li>美廉社 — 477m</li>
+        </ul>
+      </div>
+      <div class="watchers">👀 <span>581</span> 人關注 ・ ⚠️ 主建物僅 9.96 坪（含挑高）</div>
+      <div class="agent-info">經紀人：<strong>陳奕仁</strong>（新板特區店）・ 0918-106-228</div>
+      <div class="card-footer">
+        <a class="btn btn-primary" href="https://www.sinyi.com.tw/buy/house/4433BT" target="_blank">查看詳情 & 照片</a>
+        <a class="btn btn-outline" href="https://sinyi.in/o/4433BT/0/3" target="_blank">分享</a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== 其他物件（無管理員） ===== -->
+<div class="section-title">其他符合條件物件（公寓，無管理員）</div>
+<div class="grid">
+
+  <!-- 4016DX -->
+  <div class="card">
+    <div class="card-img-placeholder">
+      <div style="text-align:center">
+        <div style="font-size:2rem">🏠</div>
+        <div style="font-size:.85rem;margin-top:4px">公寓 2/4F</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="card-top">
+        <div class="card-name">新埔雙捷二樓美寓</div>
+        <div class="card-price">
+          1,298 萬
+          <span class="original">1,380 萬</span>
+          <span class="discount">降 5.94%</span>
+        </div>
+      </div>
+      <div class="card-address">新北市板橋區光武街</div>
+      <div class="info-grid">
+        <div class="info-item"><span class="info-label">格局</span><span class="info-value">3房2廳1衛</span></div>
+        <div class="info-item"><span class="info-label">建坪</span><span class="info-value">22.68 坪</span></div>
+        <div class="info-item"><span class="info-label">屋齡</span><span class="info-value">48.0 年</span></div>
+      </div>
+      <div class="tags">
+        <span class="tag market">近市場</span>
+        <span class="tag highlight">近捷運</span>
+        <span class="tag highlight">近超市</span>
+        <span class="tag" style="background:#fef2f2;color:#dc2626">新降價</span>
+        <span class="tag">有陽台</span>
+        <span class="tag">廁所開窗</span>
+      </div>
+      <div class="nearby-section">
+        <strong>周邊市場/超市</strong>
+        <ul class="nearby-list">
+          <li>全聯福利中心 — 46m</li>
+          <li>美廉社 — 285m</li>
+        </ul>
+      </div>
+      <div class="watchers">👀 <span>402</span> 人關注</div>
+      <div class="agent-info">經紀人：<strong>李弘彥</strong>（新埔捷運店）・ 0912-587-235</div>
+      <div class="card-footer">
+        <a class="btn btn-primary" href="https://www.sinyi.com.tw/buy/house/4016DX" target="_blank">查看詳情 & 照片</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7572AK -->
+  <div class="card">
+    <div class="card-img-placeholder">
+      <div style="text-align:center">
+        <div style="font-size:2rem">🏠</div>
+        <div style="font-size:.85rem;margin-top:4px">公寓 4/4F ・ 邊間</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="card-top">
+        <div class="card-name">板橋自由路全新邊間美宅</div>
+        <div class="card-price">
+          1,498 萬
+          <span class="original">1,598 萬</span>
+          <span class="discount">降 6.26%</span>
+        </div>
+      </div>
+      <div class="card-address">新北市板橋區自由路</div>
+      <div class="info-grid">
+        <div class="info-item"><span class="info-label">格局</span><span class="info-value">3房3廳2衛</span></div>
+        <div class="info-item"><span class="info-label">建坪</span><span class="info-value">27.04 坪</span></div>
+        <div class="info-item"><span class="info-label">屋齡</span><span class="info-value">50.0 年</span></div>
+      </div>
+      <div class="tags">
+        <span class="tag market">近市場</span>
+        <span class="tag highlight">近捷運</span>
+        <span class="tag highlight">近超市</span>
+        <span class="tag">有裝潢</span>
+        <span class="tag">有陽台</span>
+        <span class="tag">廁所開窗</span>
+      </div>
+      <div class="nearby-section">
+        <strong>周邊市場/超市</strong>
+        <ul class="nearby-list">
+          <li>美廉社 — 56m</li>
+          <li>全聯福利中心 — 313m</li>
+        </ul>
+      </div>
+      <div class="watchers">👀 <span>512</span> 人關注</div>
+      <div class="agent-info">經紀人：<strong>范詠智</strong>（華江重劃店）・ 0977-303-143</div>
+      <div class="card-footer">
+        <a class="btn btn-primary" href="https://www.sinyi.com.tw/buy/house/7572AK" target="_blank">查看詳情 & 照片</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 1753FQ -->
+  <div class="card">
+    <div class="card-img-placeholder">
+      <div style="text-align:center"><div style="font-size:2rem">🏠</div><div style="font-size:.85rem;margin-top:4px">公寓 3/4F</div></div>
+    </div>
+    <div class="card-body">
+      <div class="card-top">
+        <div class="card-name">鬧中取靜莒光路三樓美寓</div>
+        <div class="card-price">1,580 萬</div>
+      </div>
+      <div class="card-address">新北市板橋區莒光路</div>
+      <div class="info-grid">
+        <div class="info-item"><span class="info-label">格局</span><span class="info-value">3房2廳1衛</span></div>
+        <div class="info-item"><span class="info-label">建坪</span><span class="info-value">24.76 坪</span></div>
+        <div class="info-item"><span class="info-label">屋齡</span><span class="info-value">49.1 年</span></div>
+      </div>
+      <div class="tags">
+        <span class="tag market">近市場</span><span class="tag highlight">近超市</span>
+        <span class="tag">有裝潢</span><span class="tag">有陽台</span><span class="tag">近公園</span>
+      </div>
+      <div class="watchers">👀 <span>143</span> 人關注</div>
+      <div class="card-footer">
+        <a class="btn btn-primary" href="https://www.sinyi.com.tw/buy/house/1753FQ" target="_blank">查看詳情 & 照片</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4557MW -->
+  <div class="card">
+    <div class="card-img-placeholder">
+      <div style="text-align:center"><div style="font-size:2rem">🏠</div><div style="font-size:.85rem;margin-top:4px">公寓 2/4F</div></div>
+    </div>
+    <div class="card-body">
+      <div class="card-top">
+        <div class="card-name">★新案誠出售新埔莒光二樓</div>
+        <div class="card-price">1,580 萬</div>
+      </div>
+      <div class="card-address">新北市板橋區莒光路</div>
+      <div class="info-grid">
+        <div class="info-item"><span class="info-label">格局</span><span class="info-value">3房2廳1衛</span></div>
+        <div class="info-item"><span class="info-label">建坪</span><span class="info-value">24.76 坪</span></div>
+        <div class="info-item"><span class="info-label">屋齡</span><span class="info-value">49.1 年</span></div>
+      </div>
+      <div class="tags">
+        <span class="tag market">近市場</span><span class="tag highlight">近超市</span>
+        <span class="tag">有裝潢</span><span class="tag">有景觀</span><span class="tag">廁所開窗</span>
+      </div>
+      <div class="watchers">👀 <span>610</span> 人關注</div>
+      <div class="card-footer">
+        <a class="btn btn-primary" href="https://www.sinyi.com.tw/buy/house/4557MW" target="_blank">查看詳情 & 照片</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4833HN -->
+  <div class="card">
+    <div class="card-img-placeholder">
+      <div style="text-align:center"><div style="font-size:2rem">🏠</div><div style="font-size:.85rem;margin-top:4px">公寓 3/5F</div></div>
+    </div>
+    <div class="card-body">
+      <div class="card-top">
+        <div class="card-name">近北市正馬路便利公寓</div>
+        <div class="card-price">1,388 萬</div>
+      </div>
+      <div class="card-address">新北市板橋區中山路二段</div>
+      <div class="info-grid">
+        <div class="info-item"><span class="info-label">格局</span><span class="info-value">3房2廳1衛</span></div>
+        <div class="info-item"><span class="info-label">建坪</span><span class="info-value">21.31 坪</span></div>
+        <div class="info-item"><span class="info-label">屋齡</span><span class="info-value">44.6 年</span></div>
+      </div>
+      <div class="tags">
+        <span class="tag market">近市場</span><span class="tag highlight">近超市</span>
+        <span class="tag">有裝潢</span><span class="tag">前後陽台</span><span class="tag">房間皆有窗</span>
+        <span class="tag" style="background:#fef9c3;color:#854d0e">租賃中</span>
+      </div>
+      <div class="watchers">👀 <span>259</span> 人關注</div>
+      <div class="card-footer">
+        <a class="btn btn-primary" href="https://www.sinyi.com.tw/buy/house/4833HN" target="_blank">查看詳情 & 照片</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 0862DP -->
+  <div class="card">
+    <div class="card-img-placeholder">
+      <div style="text-align:center"><div style="font-size:2rem">🏠</div><div style="font-size:.85rem;margin-top:4px">公寓 2/4F</div></div>
+    </div>
+    <div class="card-body">
+      <div class="card-top">
+        <div class="card-name">裕民邊間２樓美寓</div>
+        <div class="card-price">
+          1,188 萬
+          <span class="original">1,238 萬</span>
+          <span class="discount">降 4.04%</span>
+        </div>
+      </div>
+      <div class="card-address">新北市板橋區裕民街</div>
+      <div class="info-grid">
+        <div class="info-item"><span class="info-label">格局</span><span class="info-value">3房2廳2衛</span></div>
+        <div class="info-item"><span class="info-label">建坪</span><span class="info-value">21.58 坪</span></div>
+        <div class="info-item"><span class="info-label">屋齡</span><span class="info-value">48.9 年</span></div>
+      </div>
+      <div class="tags">
+        <span class="tag market">近市場</span><span class="tag highlight">近超市</span>
+        <span class="tag">有裝潢</span><span class="tag">有陽台</span><span class="tag">房間皆有窗</span>
+      </div>
+      <div class="watchers">👀 <span>542</span> 人關注</div>
+      <div class="card-footer">
+        <a class="btn btn-primary" href="https://www.sinyi.com.tw/buy/house/0862DP" target="_blank">查看詳情 & 照片</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 8590WV -->
+  <div class="card">
+    <div class="card-img-placeholder">
+      <div style="text-align:center"><div style="font-size:2rem">🏠</div><div style="font-size:.85rem;margin-top:4px">公寓 3/5F</div></div>
+    </div>
+    <div class="card-body">
+      <div class="card-top">
+        <div class="card-name">金華街邊間３樓美寓</div>
+        <div class="card-price">1,188 萬</div>
+      </div>
+      <div class="card-address">新北市板橋區金華街</div>
+      <div class="info-grid">
+        <div class="info-item"><span class="info-label">格局</span><span class="info-value">3房2廳1衛</span></div>
+        <div class="info-item"><span class="info-label">建坪</span><span class="info-value">22.97 坪</span></div>
+        <div class="info-item"><span class="info-label">屋齡</span><span class="info-value">40.9 年</span></div>
+      </div>
+      <div class="tags">
+        <span class="tag market">近市場</span><span class="tag highlight">近超市</span>
+        <span class="tag">有裝潢</span><span class="tag">前後陽台</span><span class="tag">廁所開窗</span><span class="tag">房間皆有窗</span>
+      </div>
+      <div class="watchers">👀 <span>347</span> 人關注</div>
+      <div class="card-footer">
+        <a class="btn btn-primary" href="https://www.sinyi.com.tw/buy/house/8590WV" target="_blank">查看詳情 & 照片</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2214GL -->
+  <div class="card">
+    <div class="card-img-placeholder">
+      <div style="text-align:center"><div style="font-size:2rem">🏠</div><div style="font-size:.85rem;margin-top:4px">公寓 5/5F（頂加）</div></div>
+    </div>
+    <div class="card-body">
+      <div class="card-top">
+        <div class="card-name">五權公園低總價頂加</div>
+        <div class="card-price" style="color:#16a34a">928 萬</div>
+      </div>
+      <div class="card-address">新北市板橋區五權街</div>
+      <div class="info-grid">
+        <div class="info-item"><span class="info-label">格局</span><span class="info-value">3房3廳2衛</span></div>
+        <div class="info-item"><span class="info-label">建坪</span><span class="info-value">21.97 坪</span></div>
+        <div class="info-item"><span class="info-label">屋齡</span><span class="info-value">46.5 年</span></div>
+      </div>
+      <div class="tags">
+        <span class="tag market">近市場</span><span class="tag highlight">近捷運</span><span class="tag highlight">近超市</span>
+        <span class="tag">有裝潢</span><span class="tag">有陽台</span><span class="tag">廁所開窗</span>
+      </div>
+      <div class="watchers">👀 <span>280</span> 人關注</div>
+      <div class="card-footer">
+        <a class="btn btn-primary" href="https://www.sinyi.com.tw/buy/house/2214GL" target="_blank">查看詳情 & 照片</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7820DL -->
+  <div class="card">
+    <div class="card-img-placeholder">
+      <div style="text-align:center"><div style="font-size:2rem">🏠</div><div style="font-size:.85rem;margin-top:4px">公寓 3/4F</div></div>
+    </div>
+    <div class="card-body">
+      <div class="card-top">
+        <div class="card-name">埔墘３樓公寓</div>
+        <div class="card-price">
+          1,060 萬
+          <span class="original">1,150 萬</span>
+          <span class="discount">降 7.83%</span>
+        </div>
+      </div>
+      <div class="card-address">新北市板橋區中山路二段</div>
+      <div class="info-grid">
+        <div class="info-item"><span class="info-label">格局</span><span class="info-value">3房2廳1衛</span></div>
+        <div class="info-item"><span class="info-label">建坪</span><span class="info-value">18.79 坪</span></div>
+        <div class="info-item"><span class="info-label">屋齡</span><span class="info-value">50.9 年</span></div>
+      </div>
+      <div class="tags">
+        <span class="tag market">近市場</span><span class="tag highlight">近超市</span>
+        <span class="tag">有裝潢</span><span class="tag">有陽台</span>
+      </div>
+      <div class="watchers">👀 <span>655</span> 人關注（最多人關注！）</div>
+      <div class="card-footer">
+        <a class="btn btn-primary" href="https://www.sinyi.com.tw/buy/house/7820DL" target="_blank">查看詳情 & 照片</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 07095T -->
+  <div class="card">
+    <div class="card-img-placeholder">
+      <div style="text-align:center"><div style="font-size:2rem">🏠</div><div style="font-size:.85rem;margin-top:4px">公寓 4/4F</div></div>
+    </div>
+    <div class="card-body">
+      <div class="card-top">
+        <div class="card-name">家樂福旁～方正公寓</div>
+        <div class="card-price">1,388 萬</div>
+      </div>
+      <div class="card-address">新北市板橋區三民路二段</div>
+      <div class="info-grid">
+        <div class="info-item"><span class="info-label">格局</span><span class="info-value">3房3廳1衛</span></div>
+        <div class="info-item"><span class="info-label">建坪</span><span class="info-value">24.84 坪</span></div>
+        <div class="info-item"><span class="info-label">屋齡</span><span class="info-value">51.3 年</span></div>
+      </div>
+      <div class="tags">
+        <span class="tag market">近市場</span><span class="tag highlight">近超市</span>
+        <span class="tag">有裝潢</span><span class="tag">前後陽台</span><span class="tag">廁所開窗</span>
+      </div>
+      <div class="watchers">👀 <span>151</span> 人關注</div>
+      <div class="card-footer">
+        <a class="btn btn-primary" href="https://www.sinyi.com.tw/buy/house/07095T" target="_blank">查看詳情 & 照片</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 0837CH -->
+  <div class="card">
+    <div class="card-img-placeholder">
+      <div style="text-align:center"><div style="font-size:2rem">🏠</div><div style="font-size:.85rem;margin-top:4px">公寓 4/4F（頂加）</div></div>
+    </div>
+    <div class="card-body">
+      <div class="card-top">
+        <div class="card-name">板橋車站邊間公寓頂加</div>
+        <div class="card-price">1,698 萬</div>
+      </div>
+      <div class="card-address">新北市板橋區民權路</div>
+      <div class="info-grid">
+        <div class="info-item"><span class="info-label">格局</span><span class="info-value">3房3廳2衛</span></div>
+        <div class="info-item"><span class="info-label">建坪</span><span class="info-value">25.55 坪</span></div>
+        <div class="info-item"><span class="info-label">屋齡</span><span class="info-value">49.8 年</span></div>
+      </div>
+      <div class="tags">
+        <span class="tag market">近市場</span><span class="tag highlight">近捷運</span><span class="tag highlight">近超市</span>
+        <span class="tag">前後陽台</span><span class="tag">廁所開窗</span><span class="tag">房間皆有窗</span>
+      </div>
+      <div class="watchers">👀 <span>192</span> 人關注</div>
+      <div class="card-footer">
+        <a class="btn btn-primary" href="https://www.sinyi.com.tw/buy/house/0837CH" target="_blank">查看詳情 & 照片</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6052RF -->
+  <div class="card">
+    <div class="card-img-placeholder">
+      <div style="text-align:center"><div style="font-size:2rem">🏠</div><div style="font-size:.85rem;margin-top:4px">公寓 2/4F</div></div>
+    </div>
+    <div class="card-body">
+      <div class="card-top">
+        <div class="card-name">低樓層方正公寓</div>
+        <div class="card-price">
+          1,750 萬
+          <span class="original">1,830 萬</span>
+          <span class="discount">降 4.37%</span>
+        </div>
+      </div>
+      <div class="card-address">新北市板橋區民權路</div>
+      <div class="info-grid">
+        <div class="info-item"><span class="info-label">格局</span><span class="info-value">3房2廳1衛</span></div>
+        <div class="info-item"><span class="info-label">建坪</span><span class="info-value">25.85 坪</span></div>
+        <div class="info-item"><span class="info-label">屋齡</span><span class="info-value">55.4 年</span></div>
+      </div>
+      <div class="tags">
+        <span class="tag market">近市場</span><span class="tag highlight">近捷運</span><span class="tag highlight">近超市</span>
+        <span class="tag">廁所開窗</span>
+      </div>
+      <div class="watchers">👀 <span>245</span> 人關注</div>
+      <div class="card-footer">
+        <a class="btn btn-primary" href="https://www.sinyi.com.tw/buy/house/6052RF" target="_blank">查看詳情 & 照片</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 0003GK -->
+  <div class="card">
+    <div class="card-img-placeholder">
+      <div style="text-align:center"><div style="font-size:2rem">🏠</div><div style="font-size:.85rem;margin-top:4px">公寓 4/4F</div></div>
+    </div>
+    <div class="card-body">
+      <div class="card-top">
+        <div class="card-name">大觀路近亞東捷運站美宅</div>
+        <div class="card-price">
+          998 萬
+          <span class="original">1,088 萬</span>
+          <span class="discount">降 8.27%</span>
+        </div>
+      </div>
+      <div class="card-address">新北市板橋區大觀路二段</div>
+      <div class="info-grid">
+        <div class="info-item"><span class="info-label">格局</span><span class="info-value">3房3廳2衛</span></div>
+        <div class="info-item"><span class="info-label">建坪</span><span class="info-value">20.41 坪</span></div>
+        <div class="info-item"><span class="info-label">屋齡</span><span class="info-value">50.3 年</span></div>
+      </div>
+      <div class="tags">
+        <span class="tag market">近市場</span><span class="tag highlight">近超市</span>
+        <span class="tag">有裝潢</span><span class="tag">廁所開窗</span><span class="tag">房間皆有窗</span>
+      </div>
+      <div class="watchers">👀 <span>243</span> 人關注</div>
+      <div class="card-footer">
+        <a class="btn btn-primary" href="https://www.sinyi.com.tw/buy/house/0003GK" target="_blank">查看詳情 & 照片</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 9466ZD -->
+  <div class="card">
+    <div class="card-img-placeholder">
+      <div style="text-align:center"><div style="font-size:2rem">🏘️</div><div style="font-size:.85rem;margin-top:4px">華廈 1/5F ・ 有電梯</div></div>
+    </div>
+    <div class="card-body">
+      <div class="card-top">
+        <div class="card-name">心板硯挑高舒適溫馨房</div>
+        <div class="card-price">1,398 萬</div>
+      </div>
+      <div class="card-address">新北市板橋區中正路</div>
+      <div class="info-grid">
+        <div class="info-item"><span class="info-label">格局</span><span class="info-value">3房2廳1衛</span></div>
+        <div class="info-item"><span class="info-label">建坪</span><span class="info-value">16.07 坪</span></div>
+        <div class="info-item"><span class="info-label">屋齡</span><span class="info-value">11.6 年</span></div>
+      </div>
+      <div class="tags">
+        <span class="tag market">近市場</span><span class="tag highlight">近超市</span><span class="tag highlight">有電梯</span>
+        <span class="tag" style="background:#ecfdf5;color:#059669">新上架</span>
+        <span class="tag">有裝潢</span><span class="tag">前後陽台</span><span class="tag">廁所開窗</span><span class="tag">落地窗</span>
+      </div>
+      <div class="watchers">👀 新上架</div>
+      <div class="card-footer">
+        <a class="btn btn-primary" href="https://www.sinyi.com.tw/buy/house/9466ZD" target="_blank">查看詳情 & 照片</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 9435YK -->
+  <div class="card">
+    <div class="card-img-placeholder">
+      <div style="text-align:center"><div style="font-size:2rem">🏠</div><div style="font-size:.85rem;margin-top:4px">公寓 1/4F</div></div>
+    </div>
+    <div class="card-body">
+      <div class="card-top">
+        <div class="card-name">三民路一樓美寓</div>
+        <div class="card-price">
+          1,750 萬
+          <span class="original">1,880 萬</span>
+          <span class="discount">降 6.91%</span>
+        </div>
+      </div>
+      <div class="card-address">新北市板橋區三民路二段</div>
+      <div class="info-grid">
+        <div class="info-item"><span class="info-label">格局</span><span class="info-value">3房2廳1衛</span></div>
+        <div class="info-item"><span class="info-label">建坪</span><span class="info-value">20.62 坪</span></div>
+        <div class="info-item"><span class="info-label">屋齡</span><span class="info-value">48.6 年</span></div>
+      </div>
+      <div class="tags">
+        <span class="tag market">近市場</span><span class="tag highlight">近超市</span>
+        <span class="tag" style="background:#fef2f2;color:#dc2626">新降價</span>
+        <span class="tag">有裝潢</span><span class="tag">有陽台</span>
+      </div>
+      <div class="watchers">👀 <span>251</span> 人關注</div>
+      <div class="card-footer">
+        <a class="btn btn-primary" href="https://www.sinyi.com.tw/buy/house/9435YK" target="_blank">查看詳情 & 照片</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4298LV -->
+  <div class="card">
+    <div class="card-img-placeholder">
+      <div style="text-align:center"><div style="font-size:2rem">🏠</div><div style="font-size:.85rem;margin-top:4px">公寓 4/4F</div></div>
+    </div>
+    <div class="card-body">
+      <div class="card-top">
+        <div class="card-name">民生路美寓</div>
+        <div class="card-price">
+          1,300 萬
+          <span class="original">1,398 萬</span>
+          <span class="discount">降 7.01%</span>
+        </div>
+      </div>
+      <div class="card-address">新北市板橋區民生路三段</div>
+      <div class="info-grid">
+        <div class="info-item"><span class="info-label">格局</span><span class="info-value">3房3廳2衛</span></div>
+        <div class="info-item"><span class="info-label">建坪</span><span class="info-value">21.44 坪</span></div>
+        <div class="info-item"><span class="info-label">屋齡</span><span class="info-value">53.5 年</span></div>
+      </div>
+      <div class="tags">
+        <span class="tag market">近市場</span><span class="tag highlight">近捷運</span><span class="tag highlight">近超市</span>
+        <span class="tag" style="background:#fef2f2;color:#dc2626">新降價</span>
+        <span class="tag">有裝潢</span><span class="tag">有陽台</span><span class="tag">廁所開窗</span>
+      </div>
+      <div class="watchers">👀 <span>206</span> 人關注</div>
+      <div class="card-footer">
+        <a class="btn btn-primary" href="https://www.sinyi.com.tw/buy/house/4298LV" target="_blank">查看詳情 & 照片</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5221NF -->
+  <div class="card">
+    <div class="card-img-placeholder">
+      <div style="text-align:center"><div style="font-size:2rem">🏠</div><div style="font-size:.85rem;margin-top:4px">公寓 1/4F</div></div>
+    </div>
+    <div class="card-body">
+      <div class="card-top">
+        <div class="card-name">金門街面寬大美一樓</div>
+        <div class="card-price">1,598 萬</div>
+      </div>
+      <div class="card-address">新北市板橋區金門街</div>
+      <div class="info-grid">
+        <div class="info-item"><span class="info-label">格局</span><span class="info-value">3房2廳2衛</span></div>
+        <div class="info-item"><span class="info-label">建坪</span><span class="info-value">24.4 坪</span></div>
+        <div class="info-item"><span class="info-label">屋齡</span><span class="info-value">46.0 年</span></div>
+      </div>
+      <div class="tags">
+        <span class="tag market">近市場</span><span class="tag highlight">近超市</span>
+        <span class="tag">有裝潢</span><span class="tag">有陽台</span><span class="tag">廁所開窗</span>
+      </div>
+      <div class="watchers">👀 <span>99</span> 人關注</div>
+      <div class="card-footer">
+        <a class="btn btn-primary" href="https://www.sinyi.com.tw/buy/house/5221NF" target="_blank">查看詳情 & 照片</a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <p>資料來源：信義房屋 ・ 搜尋時間：2026-03-24 ・ 共 29 筆（顯示前 20 筆）</p>
+  <p>點擊「查看詳情 & 照片」可查看物件實拍照片、3D看屋及完整資訊</p>
+</footer>
+
+</body>
+</html>
