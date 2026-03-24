@@ -4,7 +4,7 @@
 set -e
 
 PACKAGE="sinyi-search-mcp"
-SERVER_NAME="sinyi-search"
+SERVER_NAME="買屋快搜 (by 信義房屋)"
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 RED='\033[0;31m'
