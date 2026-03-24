@@ -250,47 +250,127 @@ def _extract_nearby(life_info: list) -> dict:
     return result
 
 
-def format_object_detail(content: dict, detail: dict) -> dict:
-    house_no = content.get("houseNo", "")
-    agent = content.get("agent")
+def _format_agent(agent: dict | None) -> dict | None:
+    if not agent:
+        return None
     return {
+        "id": agent.get("agentId"),
+        "name": agent.get("agentName"),
+        "image": agent.get("agentImage"),
+        "tel": agent.get("agentTel"),
+        "official_tel": agent.get("agentOfficialTel"),
+        "store_id": agent.get("agentStoreID"),
+        "store": agent.get("agentStore"),
+        "store_addr": agent.get("agentStoreAddr"),
+        "store_tel": agent.get("agentStoreTel"),
+        "lets_chat": agent.get("useLetsChat"),
+        "title": agent.get("title"),
+    }
+
+
+def format_object_detail(content: dict, detail: dict) -> dict:
+    """合併 getObjectContent + getObjectDetail — 100% 欄位。"""
+    house_no = content.get("houseNo", "")
+    d = detail.get("detail") or {}
+
+    return {
+        # ── 基本 ──
         "id": house_no,
         "name": content.get("name"),
         "address": content.get("address"),
+        "city_id": content.get("cityId"),
         "city": content.get("cityName"),
+        "zip_code": content.get("zipCode"),
         "district": content.get("zipName"),
+        "community_id": content.get("commId"),
         "community": content.get("commName"),
+        "object_type": content.get("objectType"),
+        "type": [TYPE_NAMES.get(t, t) for t in (content.get("houselandtype") or [])],
+        "type_raw": content.get("houselandtype"),
+        # ── 價格 ──
         "price": content.get("totalPrice"),
         "price_original": content.get("priceFirst"),
         "discount_pct": content.get("discount"),
+        "unit_price": content.get("uniPrice"),
+        "land_unit_price": content.get("landUniprice"),
+        # ── 格局 ──
         "layout": content.get("totalLayout") or content.get("layout"),
+        "roomplus": content.get("roomplus"),
+        "hallplus": content.get("hallplus"),
+        "bathroomplus": content.get("bathroomplus"),
+        "openroomplus": content.get("openroomplus"),
         "floor": content.get("floor"),
         "total_floor": content.get("floors"),
         "age": content.get("age"),
-        "type": [TYPE_NAMES.get(t, t) for t in (content.get("houselandtype") or [])],
+        # ── 面積 ──
         "building_area": content.get("areaBuilding"),
         "main_area": content.get("pingUsed"),
         "land_area": content.get("areaLand"),
         "area_detail": content.get("areaInfo"),
+        "house_size": content.get("houseSize"),
+        "has_balcony": content.get("isHasBalcony"),
+        # ── 座向 ──
+        "house_front": content.get("houseFront"),
         "building_front": content.get("buildingFront"),
         "window_front": content.get("windowFront"),
+        "direction_land": content.get("directionland"),
+        # ── 特徵 ──
         "is_side_unit": content.get("sfside", False),
         "has_darkroom": content.get("sfdarkroom", False),
         "management": content.get("hasmanager"),
         "monthly_fee": content.get("monthlyFee"),
+        # ── 車位 ──
+        "has_parking": content.get("isParking"),
         "parking": content.get("parking"),
-        "structure": (detail.get("detail") or {}).get("buildingStructure"),
-        "wall": (detail.get("detail") or {}).get("wallStructure"),
-        "families_per_floor": (detail.get("detail") or {}).get("family"),
-        "purpose": (detail.get("detail") or {}).get("purpose"),
-        "zoning": (detail.get("detail") or {}).get("partition"),
+        # ── 建築結構 (from detail) ──
+        "structure": d.get("buildingStructure"),
+        "wall": d.get("wallStructure"),
+        "families_per_floor": d.get("family"),
+        "purpose": d.get("purpose"),
+        "zoning": d.get("partition"),
+        "detail_other": d.get("other"),
+        "detail_notice": d.get("notice"),
+        # ── 經紀人賣點 ──
         "description": detail.get("description", []),
+        # ── 標籤 ──
         "tags": [TAG_NAMES.get(str(t), str(t)) for t in (detail.get("tags") or [])],
+        "tags_raw": detail.get("tags"),
+        "house_spec_tags": detail.get("houseSpecTags"),
+        "house_facility_tags": detail.get("houseFacilityTags"),
+        "house_life_tags": detail.get("houseLifeTags"),
+        "house_feature_tags": detail.get("houseFeatureTags"),
+        # ── 圖片 & 媒體 ──
+        "images": content.get("images"),
+        "layout_image": content.get("layoutImage"),
+        "layout_image_3d": content.get("layoutImage3D"),
+        "map_image": content.get("map"),
+        "vr_type": content.get("vrType"),
+        "vr_url": content.get("vrUrl"),
+        "vr_demo_url": content.get("vrDemoUrl"),
+        "vr_image": content.get("vrImgUrl"),
+        "ai_tour": content.get("aiTour"),
+        "ai_tour_url": content.get("aiTourURL"),
+        "video_url": content.get("videoUrl"),
+        # ── 語音導覽 (from detail) ──
+        "audio_list": detail.get("audioList"),
+        "audio_count": detail.get("audioCount"),
+        # ── 生活圈 ──
         "nearby": _extract_nearby(detail.get("lifeInfo") or []),
+        "life_info_raw": detail.get("lifeInfo"),
+        "utility_life_info": detail.get("utilitylifeInfo"),
+        # ── 連結 ──
         "detail_url": f"https://www.sinyi.com.tw/buy/house/{house_no}" if house_no else None,
         "share_url": content.get("shareURL"),
+        # ── 座標 ──
+        "latitude": content.get("latitude"),
+        "longitude": content.get("longitude"),
+        # ── 統計 ──
         "watchers": content.get("threeMonthsClicks"),
         "first_listed": content.get("firstDisplay"),
-        "agent": {"name": agent.get("agentName"), "store": agent.get("agentStore"),
-                  "tel": agent.get("agentTel")} if agent else None,
+        "is_same_trade": content.get("isSameTrade"),
+        # ── 經紀人 ──
+        "agent": _format_agent(content.get("agent")),
+        "agent2": _format_agent(content.get("agent2")),
+        # ── 門市 ──
+        "store": content.get("store"),
     }
