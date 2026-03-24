@@ -1,5 +1,6 @@
 # house-search-mcp 一鍵安裝腳本 (Windows) — Claude Desktop + Codex CLI
-# 用法: irm https://raw.githubusercontent.com/tonywang0122/house-search-mcp/main/install.ps1 | iex
+# 用法（如遇 policy 問題請用下方完整指令）:
+#   powershell -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/tonywang0122/house-search-mcp/main/install.ps1 | iex"
 
 $ErrorActionPreference = "Stop"
 
@@ -113,27 +114,38 @@ Write-Host "[Step 3/4] 設定 Codex CLI..." -ForegroundColor White
 $codexCmd = Get-Command codex -ErrorAction SilentlyContinue
 if ($codexCmd) {
     Write-Host "  [OK] Codex CLI 已安裝: $($codexCmd.Source)" -ForegroundColor Green
+
+    # 偵測 Codex config.toml 路徑（一般版 vs Store 版）
+    $codexConfig = $null
+    $storeCodex = Get-Item "$env:LOCALAPPDATA\Packages\*codex*\LocalCache\Roaming\.codex\config.toml" -ErrorAction SilentlyContinue
+    if ($storeCodex) {
+        $codexConfig = $storeCodex.FullName
+        Write-Host "  [INFO] 偵測到 Store 版 Codex: $codexConfig" -ForegroundColor Yellow
+    } else {
+        $codexConfig = Join-Path $env:USERPROFILE ".codex\config.toml"
+        Write-Host "  [INFO] 一般版 Codex config: $codexConfig" -ForegroundColor Yellow
+    }
+
     try {
         & codex mcp remove $SERVER_NAME 2>$null
         & codex mcp add $SERVER_NAME -- $uvxPath $PACKAGE 2>&1
-        Write-Host "  [OK] Codex CLI MCP 設定完成" -ForegroundColor Green
+        Write-Host "  [OK] Codex CLI MCP 設定完成（via codex mcp add）" -ForegroundColor Green
         $installed += "Codex CLI"
     } catch {
         Write-Host "  [WARN] codex mcp add 失敗，嘗試寫 config.toml..." -ForegroundColor Yellow
-        $codexConfig = Join-Path $env:USERPROFILE ".codex\config.toml"
         if (Test-Path $codexConfig) {
             $content = Get-Content $codexConfig -Raw
             if ($content -notmatch "mcp_servers.*$SERVER_NAME") {
                 $tomlBlock = "`n[mcp_servers.`"$SERVER_NAME`"]`ncommand = `"$uvxPath`"`nargs = [`"$PACKAGE`"]`n"
                 Add-Content $codexConfig $tomlBlock
-                Write-Host "  [OK] Codex config.toml 已更新" -ForegroundColor Green
+                Write-Host "  [OK] Codex config.toml 已更新: $codexConfig" -ForegroundColor Green
                 $installed += "Codex CLI"
             } else {
                 Write-Host "  [OK] Codex config.toml 已包含此 server" -ForegroundColor Green
                 $installed += "Codex CLI"
             }
         } else {
-            Write-Host "  [WARN] Codex config.toml 不存在，跳過" -ForegroundColor Yellow
+            Write-Host "  [WARN] Codex config.toml 不存在: $codexConfig" -ForegroundColor Yellow
         }
     }
 } else {

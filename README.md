@@ -14,7 +14,13 @@ curl -LsSf https://raw.githubusercontent.com/tonywang0122/house-search-mcp/main/
 irm https://raw.githubusercontent.com/tonywang0122/house-search-mcp/main/install.ps1 | iex
 ```
 
-安裝完成後，重啟 Claude Desktop 即可使用。
+> 如果遇到 ExecutionPolicy 錯誤，改用：
+> ```powershell
+> powershell -ExecutionPolicy Bypass -Command "irm https://raw.githubusercontent.com/tonywang0122/house-search-mcp/main/install.ps1 | iex"
+> ```
+
+自動偵測並設定：Claude Desktop（含 Store 版）+ Codex CLI。
+安裝完成後，重啟應用即可使用。
 
 ## 功能
 
