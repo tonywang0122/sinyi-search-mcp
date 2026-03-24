@@ -1,10 +1,11 @@
-# house-search-mcp 一鍵安裝腳本 (Windows)
+# house-search-mcp 一鍵安裝腳本 (Windows) — Claude Desktop + Codex CLI
 # 用法: irm https://raw.githubusercontent.com/tonywang0122/house-search-mcp/main/install.ps1 | iex
 
 $ErrorActionPreference = "Stop"
 
 $PACKAGE = "house-search-mcp"
 $SERVER_NAME = "買屋快搜"
+$installed = @()
 
 Write-Host ""
 Write-Host "===============================" -ForegroundColor Cyan
@@ -14,194 +15,136 @@ Write-Host ""
 
 # ── Step 1: 檢查 / 安裝 uv ──────────────────────────────────
 
-Write-Host "[Step 1/5] 檢查 uv..." -ForegroundColor White
+Write-Host "[Step 1/4] 檢查 uv..." -ForegroundColor White
 
 try {
     $uvCmd = Get-Command uv -ErrorAction Stop
     $uvVersion = & uv --version 2>&1
     Write-Host "  [OK] uv 已安裝: $uvVersion" -ForegroundColor Green
-    Write-Host "  [OK] uv 路徑: $($uvCmd.Source)" -ForegroundColor Green
 } catch {
     Write-Host "  [INFO] uv 未安裝，開始安裝..." -ForegroundColor Yellow
     try {
         irm https://astral.sh/uv/install.ps1 | iex
-        Write-Host "  [OK] uv 安裝指令已執行" -ForegroundColor Green
     } catch {
         Write-Host "  [FAIL] uv 安裝失敗: $_" -ForegroundColor Red
-        Write-Host "  請手動安裝: https://docs.astral.sh/uv/" -ForegroundColor Red
         Read-Host "按 Enter 結束"
         exit 1
     }
-    # 刷新 PATH
     $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "User") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "Machine")
-    Write-Host "  [INFO] PATH 已刷新" -ForegroundColor Yellow
     try {
-        $uvCmd = Get-Command uv -ErrorAction Stop
-        Write-Host "  [OK] uv 安裝成功: $($uvCmd.Source)" -ForegroundColor Green
+        Get-Command uv -ErrorAction Stop | Out-Null
+        Write-Host "  [OK] uv 安裝成功" -ForegroundColor Green
     } catch {
-        Write-Host "  [FAIL] uv 安裝後仍找不到，請重開終端機再試" -ForegroundColor Red
+        Write-Host "  [FAIL] uv 安裝後找不到，請重開終端機再試" -ForegroundColor Red
         Read-Host "按 Enter 結束"
         exit 1
     }
 }
 
-# ── Step 2: 取得 uvx 路徑 ────────────────────────────────────
-
-Write-Host ""
-Write-Host "[Step 2/5] 取得 uvx 路徑..." -ForegroundColor White
-
+# 取得 uvx 路徑
 $uvxPath = $null
-try {
-    $uvxCmd = Get-Command uvx -ErrorAction Stop
-    $uvxPath = $uvxCmd.Source
-    Write-Host "  [OK] uvx 找到: $uvxPath" -ForegroundColor Green
-} catch {
-    Write-Host "  [INFO] uvx 不在 PATH，嘗試從 uv 同目錄找..." -ForegroundColor Yellow
-    try {
-        $uvDir = Split-Path (Get-Command uv -ErrorAction Stop).Source
-        $candidate = Join-Path $uvDir "uvx.exe"
-        Write-Host "  [INFO] 嘗試路徑: $candidate" -ForegroundColor Yellow
-        if (Test-Path $candidate) {
-            $uvxPath = $candidate
-            Write-Host "  [OK] uvx 找到: $uvxPath" -ForegroundColor Green
-        } else {
-            Write-Host "  [INFO] $candidate 不存在" -ForegroundColor Yellow
-            # 再試 uv 本身（新版 uv 整合了 uvx 功能）
-            $uvxPath = (Get-Command uv).Source
-            Write-Host "  [INFO] 改用 uv 路徑: $uvxPath (將用 uv tool run 替代)" -ForegroundColor Yellow
-        }
-    } catch {
-        Write-Host "  [FAIL] 找不到 uvx 也找不到 uv: $_" -ForegroundColor Red
-        Read-Host "按 Enter 結束"
-        exit 1
-    }
+try { $uvxPath = (Get-Command uvx -ErrorAction Stop).Source } catch {}
+if (-not $uvxPath) {
+    $uvDir = Split-Path (Get-Command uv).Source
+    $candidate = Join-Path $uvDir "uvx.exe"
+    if (Test-Path $candidate) { $uvxPath = $candidate }
+    else { $uvxPath = (Get-Command uv).Source }
+}
+Write-Host "  [OK] uvx: $uvxPath" -ForegroundColor Green
+
+# MCP server command/args
+if ($uvxPath -match "uvx") {
+    $serverCommand = $uvxPath
+    $serverArgs = @($PACKAGE)
+} else {
+    $serverCommand = $uvxPath
+    $serverArgs = @("tool", "run", $PACKAGE)
 }
 
-# ── Step 3: 找到 Claude Desktop 設定檔 ───────────────────────
+# ── Step 2: Claude Desktop ───────────────────────────────────
 
 Write-Host ""
-Write-Host "[Step 3/5] 找到 Claude Desktop 設定檔..." -ForegroundColor White
+Write-Host "[Step 2/4] 設定 Claude Desktop..." -ForegroundColor White
 
 # 偵測 Store 版 vs 一般安裝版
 $storeConfig = Get-Item "$env:LOCALAPPDATA\Packages\Claude_*\LocalCache\Roaming\Claude" -ErrorAction SilentlyContinue
 if ($storeConfig) {
     $configDir = $storeConfig.FullName
-    Write-Host "  [INFO] 偵測到 Microsoft Store 版 Claude Desktop" -ForegroundColor Yellow
+    Write-Host "  [INFO] 偵測到 Microsoft Store 版" -ForegroundColor Yellow
 } else {
     $configDir = Join-Path $env:APPDATA "Claude"
-    Write-Host "  [INFO] 偵測到一般安裝版 Claude Desktop" -ForegroundColor Yellow
+    Write-Host "  [INFO] 偵測到一般安裝版" -ForegroundColor Yellow
 }
 $configFile = Join-Path $configDir "claude_desktop_config.json"
 
-Write-Host "  [INFO] 設定檔目錄: $configDir" -ForegroundColor Yellow
-Write-Host "  [INFO] 設定檔路徑: $configFile" -ForegroundColor Yellow
-
 if (-not (Test-Path $configDir)) {
     New-Item -ItemType Directory -Path $configDir -Force | Out-Null
-    Write-Host "  [OK] 目錄已建立" -ForegroundColor Green
-} else {
-    Write-Host "  [OK] 目錄已存在" -ForegroundColor Green
 }
-
-if (Test-Path $configFile) {
-    $existingContent = Get-Content $configFile -Raw -ErrorAction SilentlyContinue
-    Write-Host "  [INFO] 現有設定檔內容:" -ForegroundColor Yellow
-    Write-Host $existingContent -ForegroundColor DarkGray
-} else {
-    Write-Host "  [INFO] 設定檔不存在，將建立新檔" -ForegroundColor Yellow
-}
-
-# ── Step 4: 更新設定檔 ───────────────────────────────────────
-
-Write-Host ""
-Write-Host "[Step 4/5] 更新設定檔..." -ForegroundColor White
-
-# 決定 command 和 args
-if ($uvxPath -match "uvx") {
-    $serverCommand = $uvxPath
-    $serverArgs = @($PACKAGE)
-} else {
-    # 用 uv tool run 替代 uvx
-    $serverCommand = $uvxPath
-    $serverArgs = @("tool", "run", $PACKAGE)
-}
-
-Write-Host "  [INFO] MCP command: $serverCommand" -ForegroundColor Yellow
-Write-Host "  [INFO] MCP args: $($serverArgs -join ' ')" -ForegroundColor Yellow
 
 try {
-    if (Test-Path $configFile) {
-        $raw = Get-Content $configFile -Raw
-        Write-Host "  [INFO] 讀取現有設定檔成功 ($($raw.Length) bytes)" -ForegroundColor Yellow
-        $config = $raw | ConvertFrom-Json
-        Write-Host "  [OK] JSON 解析成功" -ForegroundColor Green
+    $newServer = [PSCustomObject]@{ command = $serverCommand; args = $serverArgs }
 
-        # 確保 mcpServers 存在
+    if (Test-Path $configFile) {
+        $config = Get-Content $configFile -Raw | ConvertFrom-Json
         if (-not $config.mcpServers) {
-            Write-Host "  [INFO] mcpServers 不存在，新增..." -ForegroundColor Yellow
             $config | Add-Member -NotePropertyName "mcpServers" -NotePropertyValue ([PSCustomObject]@{})
         }
-
-        # 新增或更新 server
-        $newServer = [PSCustomObject]@{
-            command = $serverCommand
-            args = $serverArgs
-        }
-
         if ($config.mcpServers.PSObject.Properties[$SERVER_NAME]) {
             $config.mcpServers.$SERVER_NAME = $newServer
-            Write-Host "  [OK] 已更新 '$SERVER_NAME'" -ForegroundColor Green
         } else {
             $config.mcpServers | Add-Member -NotePropertyName $SERVER_NAME -NotePropertyValue $newServer
-            Write-Host "  [OK] 已新增 '$SERVER_NAME'" -ForegroundColor Green
         }
-
-        $output = $config | ConvertTo-Json -Depth 10
-        Write-Host "  [INFO] 輸出 JSON:" -ForegroundColor Yellow
-        Write-Host $output -ForegroundColor DarkGray
-        $output | Set-Content $configFile -Encoding UTF8
-        Write-Host "  [OK] 設定檔已寫入" -ForegroundColor Green
+        $config | ConvertTo-Json -Depth 10 | Set-Content $configFile -Encoding UTF8
     } else {
-        Write-Host "  [INFO] 建立新設定檔..." -ForegroundColor Yellow
-        $config = @{
-            mcpServers = @{
-                $SERVER_NAME = @{
-                    command = $serverCommand
-                    args = $serverArgs
-                }
-            }
-        }
-        $output = $config | ConvertTo-Json -Depth 10
-        Write-Host "  [INFO] 輸出 JSON:" -ForegroundColor Yellow
-        Write-Host $output -ForegroundColor DarkGray
-        $output | Set-Content $configFile -Encoding UTF8
-        Write-Host "  [OK] 新設定檔已建立" -ForegroundColor Green
+        @{ mcpServers = @{ $SERVER_NAME = @{ command = $serverCommand; args = $serverArgs } } } |
+            ConvertTo-Json -Depth 10 | Set-Content $configFile -Encoding UTF8
     }
+    Write-Host "  [OK] Claude Desktop 設定完成: $configFile" -ForegroundColor Green
+    $installed += "Claude Desktop"
 } catch {
-    Write-Host "  [FAIL] 設定檔更新失敗: $_" -ForegroundColor Red
-    Write-Host "  [FAIL] 錯誤詳情: $($_.Exception.Message)" -ForegroundColor Red
-    Write-Host "  [FAIL] 錯誤位置: $($_.InvocationInfo.PositionMessage)" -ForegroundColor Red
-    Read-Host "按 Enter 結束"
-    exit 1
+    Write-Host "  [FAIL] Claude Desktop 設定失敗: $($_.Exception.Message)" -ForegroundColor Red
 }
 
-# ── Step 5: 驗證 ─────────────────────────────────────────────
+# ── Step 3: Codex CLI ────────────────────────────────────────
 
 Write-Host ""
-Write-Host "[Step 5/5] 驗證..." -ForegroundColor White
+Write-Host "[Step 3/4] 設定 Codex CLI..." -ForegroundColor White
 
-if (Test-Path $configFile) {
-    $finalContent = Get-Content $configFile -Raw
-    Write-Host "  [INFO] 最終設定檔內容:" -ForegroundColor Yellow
-    Write-Host $finalContent -ForegroundColor DarkGray
-    if ($finalContent -match $PACKAGE) {
-        Write-Host "  [OK] 設定檔包含 $PACKAGE" -ForegroundColor Green
-    } else {
-        Write-Host "  [WARN] 設定檔似乎不包含 $PACKAGE" -ForegroundColor Red
+$codexCmd = Get-Command codex -ErrorAction SilentlyContinue
+if ($codexCmd) {
+    Write-Host "  [OK] Codex CLI 已安裝: $($codexCmd.Source)" -ForegroundColor Green
+    try {
+        & codex mcp remove $SERVER_NAME 2>$null
+        & codex mcp add $SERVER_NAME -- $uvxPath $PACKAGE 2>&1
+        Write-Host "  [OK] Codex CLI MCP 設定完成" -ForegroundColor Green
+        $installed += "Codex CLI"
+    } catch {
+        Write-Host "  [WARN] codex mcp add 失敗，嘗試寫 config.toml..." -ForegroundColor Yellow
+        $codexConfig = Join-Path $env:USERPROFILE ".codex\config.toml"
+        if (Test-Path $codexConfig) {
+            $content = Get-Content $codexConfig -Raw
+            if ($content -notmatch "mcp_servers.*$SERVER_NAME") {
+                $tomlBlock = "`n[mcp_servers.`"$SERVER_NAME`"]`ncommand = `"$uvxPath`"`nargs = [`"$PACKAGE`"]`n"
+                Add-Content $codexConfig $tomlBlock
+                Write-Host "  [OK] Codex config.toml 已更新" -ForegroundColor Green
+                $installed += "Codex CLI"
+            } else {
+                Write-Host "  [OK] Codex config.toml 已包含此 server" -ForegroundColor Green
+                $installed += "Codex CLI"
+            }
+        } else {
+            Write-Host "  [WARN] Codex config.toml 不存在，跳過" -ForegroundColor Yellow
+        }
     }
 } else {
-    Write-Host "  [FAIL] 設定檔不存在!" -ForegroundColor Red
+    Write-Host "  [SKIP] 未偵測到 Codex CLI" -ForegroundColor DarkGray
 }
+
+# ── Step 4: ChatGPT Desktop ─────────────────────────────────
+
+Write-Host ""
+Write-Host "[Step 4/4] ChatGPT Desktop..." -ForegroundColor White
+Write-Host "  [SKIP] ChatGPT Desktop 目前僅支援 remote HTTP MCP，不支援 local stdio" -ForegroundColor DarkGray
 
 # ── 完成 ─────────────────────────────────────────────────────
 
@@ -209,12 +152,16 @@ Write-Host ""
 Write-Host "===============================" -ForegroundColor Green
 Write-Host "  安裝完成！" -ForegroundColor Green
 Write-Host "===============================" -ForegroundColor Green
+if ($installed.Count -gt 0) {
+    Write-Host "  已設定: $($installed -join ', ')" -ForegroundColor Green
+}
 Write-Host ""
 Write-Host "下一步："
-Write-Host "  1. 完全退出 Claude Desktop（系統匣圖示也要右鍵退出）"
-Write-Host "  2. 重新開啟 Claude Desktop"
-Write-Host "  3. 開始對話：幫我找板橋三房 預算一千八"
+Write-Host "  1. 重啟 Claude Desktop / Codex CLI"
+Write-Host '  2. 開始對話：「幫我找板橋三房 預算一千八」'
 Write-Host ""
-Write-Host "設定檔位置: $configFile"
+Write-Host "設定檔:"
+Write-Host "  Claude: $configFile"
+if ($codexCmd) { Write-Host "  Codex:  codex mcp list" }
 Write-Host ""
 Read-Host "按 Enter 結束"
