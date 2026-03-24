@@ -1,7 +1,7 @@
 [project]
-name = "sinyi-search-mcp"
-version = "0.1.0"
-description = "台灣房屋物件搜尋 MCP Server（信義房屋 API）"
+name = "house-search-mcp"
+version = "0.1.1"
+description = "房屋物件搜尋 MCP Server"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.11"
@@ -11,7 +11,7 @@ dependencies = [
 ]
 
 [project.scripts]
-sinyi-search-mcp = "sinyi_search_mcp.server:main"
+house-search-mcp = "house_search_mcp.server:main"
 
 [build-system]
 requires = ["hatchling"]

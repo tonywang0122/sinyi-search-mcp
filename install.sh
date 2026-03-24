@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# sinyi-search-mcp 一鍵安裝腳本
-# 用法: curl -LsSf https://raw.githubusercontent.com/tonywang0122/sinyi-search-mcp/main/install.sh | bash
+# house-search-mcp 一鍵安裝腳本
+# 用法: curl -LsSf https://raw.githubusercontent.com/tonywang0122/house-search-mcp/main/install.sh | bash
 set -e
 
-PACKAGE="sinyi-search-mcp"
-SERVER_NAME="買屋快搜 (by 信義房屋)"
+PACKAGE="house-search-mcp"
+SERVER_NAME="買屋快搜"
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 RED='\033[0;31m'
@@ -48,7 +48,7 @@ elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
     CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/claude"
 else
     echo -e "${RED}✗${NC} 不支援的作業系統: $OSTYPE"
-    echo "  請手動設定，參考: https://github.com/tonywang0122/sinyi-search-mcp#manual-setup"
+    echo "  請手動設定，參考: https://github.com/tonywang0122/house-search-mcp#manual-setup"
     exit 1
 fi
 
@@ -63,7 +63,7 @@ mkdir -p "$CONFIG_DIR"
 UVX_PATH=$(command -v uvx)
 
 if [ -f "$CONFIG_FILE" ]; then
-    # 檔案已存在：檢查是否已有 sinyi-search
+    # 檔案已存在：檢查是否已有 house-search
     if grep -q "$SERVER_NAME" "$CONFIG_FILE" 2>/dev/null; then
         echo -e "${YELLOW}→${NC} 設定檔已包含 ${SERVER_NAME}，更新中..."
         # 用 python 更新 JSON（安全處理）

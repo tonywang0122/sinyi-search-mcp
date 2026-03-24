@@ -1,25 +1,25 @@
-# 買屋快搜 (by 信義房屋)
+# 買屋快搜
 
-台灣房屋物件搜尋 MCP Server — 讓 Claude 幫你找房子。
+房屋物件搜尋 MCP Server — 讓 Claude 幫你找房子。
 
 ## 一鍵安裝
 
 **macOS / Linux：**
 ```bash
-curl -LsSf https://raw.githubusercontent.com/tonywang0122/sinyi-search-mcp/main/install.sh | bash
+curl -LsSf https://raw.githubusercontent.com/tonywang0122/house-search-mcp/main/install.sh | bash
 ```
 
 **Windows (PowerShell)：**
 ```powershell
-irm https://raw.githubusercontent.com/tonywang0122/sinyi-search-mcp/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/tonywang0122/house-search-mcp/main/install.ps1 | iex
 ```
 
 安裝完成後，重啟 Claude Desktop 即可使用。
 
 ## 功能
 
-- **sinyi_search** — 搜尋物件列表（城市、行政區、房數、價格、坪數、屋齡等篩選）
-- **sinyi_get_detail** — 查詢單一物件完整明細（座向、建築結構、生活圈步行距離、管理費等）
+- **house_search** — 搜尋物件列表（城市、行政區、房數、價格、坪數、屋齡等篩選）
+- **house_get_detail** — 查詢單一物件完整明細（座向、建築結構、生活圈步行距離、管理費等）
 
 ## 使用方式
 
@@ -41,9 +41,9 @@ irm https://raw.githubusercontent.com/tonywang0122/sinyi-search-mcp/main/install
 ```json
 {
   "mcpServers": {
-    "買屋快搜 (by 信義房屋)": {
+    "買屋快搜": {
       "command": "uvx",
-      "args": ["sinyi-search-mcp"]
+      "args": ["house-search-mcp"]
     }
   }
 }

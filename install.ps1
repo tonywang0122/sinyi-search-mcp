@@ -1,14 +1,14 @@
-# sinyi-search-mcp 一鍵安裝腳本 (Windows)
-# 用法: irm https://raw.githubusercontent.com/tonywang0122/sinyi-search-mcp/main/install.ps1 | iex
+# house-search-mcp 一鍵安裝腳本 (Windows)
+# 用法: irm https://raw.githubusercontent.com/tonywang0122/house-search-mcp/main/install.ps1 | iex
 
 $ErrorActionPreference = "Stop"
 
-$PACKAGE = "sinyi-search-mcp"
-$SERVER_NAME = "買屋快搜 (by 信義房屋)"
+$PACKAGE = "house-search-mcp"
+$SERVER_NAME = "買屋快搜"
 
 Write-Host ""
 Write-Host "===============================" -ForegroundColor Cyan
-Write-Host "  sinyi-search-mcp installer"  -ForegroundColor Cyan
+Write-Host "  house-search-mcp installer"  -ForegroundColor Cyan
 Write-Host "===============================" -ForegroundColor Cyan
 Write-Host ""
 

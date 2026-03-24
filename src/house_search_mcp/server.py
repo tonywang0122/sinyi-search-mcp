@@ -1,4 +1,4 @@
-"""sinyi-search-mcp — MCP Server entry point."""
+"""house-search-mcp — MCP Server entry point."""
 
 import json
 import math
@@ -7,15 +7,15 @@ from mcp.server.fastmcp import FastMCP
 
 from . import api
 
-mcp = FastMCP("sinyi-search", instructions="""台灣房屋物件搜尋工具。
-提供 sinyi_search（搜尋物件列表）和 sinyi_get_detail（查詢單一物件明細）。
+mcp = FastMCP("house-search", instructions="""房屋物件搜尋工具。
+提供 house_search（搜尋物件列表）和 house_get_detail（查詢單一物件明細）。
 搜尋結果包含價格、坪數、格局、屋齡、標籤、關注人數等。
 物件明細包含座向、建築結構、經紀人賣點、周邊生活圈步行距離、管理費等。
 """)
 
 
 @mcp.tool()
-def sinyi_search(
+def house_search(
     city: str,
     zip: str = "",
     type: str = "",
@@ -32,7 +32,7 @@ def sinyi_search(
     page: int = 1,
     page_size: int = 20,
 ) -> str:
-    """搜尋台灣房屋物件列表。
+    """搜尋房屋物件列表。
 
     Args:
         city: 城市代碼。Taipei=台北市, NewTaipei=新北市, Taoyuan=桃園市,
@@ -96,14 +96,14 @@ def sinyi_search(
 
 
 @mcp.tool()
-def sinyi_get_detail(house_no: str) -> str:
+def house_get_detail(house_no: str) -> str:
     """查詢單一房屋物件的完整明細。
 
     回傳座向、建築結構、經紀人賣點描述、周邊生活圈步行距離、
     管理方式、車位詳情、月管理費等完整資訊。
 
     Args:
-        house_no: 物件編號（如 '1083GN'），從 sinyi_search 結果的 id 欄位取得。
+        house_no: 物件編號（如 '1083GN'），從 house_search 結果的 id 欄位取得。
                   也可傳入物件 URL，會自動提取編號。
     """
     if "/" in house_no:
