@@ -43,7 +43,7 @@ irm https://raw.githubusercontent.com/tonywang0122/sinyi-search-mcp/main/install
   "mcpServers": {
     "買屋快搜 (by 信義房屋)": {
       "command": "uvx",
-      "args": ["--from", "git+https://github.com/tonywang0122/sinyi-search-mcp", "sinyi-search-mcp"]
+      "args": ["sinyi-search-mcp"]
     }
   }
 }

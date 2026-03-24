@@ -112,7 +112,7 @@ Write-Host "[Step 4/5] 更新設定檔..." -ForegroundColor White
 # 決定 command 和 args
 if ($uvxPath -match "uvx") {
     $serverCommand = $uvxPath
-    $serverArgs = @("--from", "git+https://github.com/tonywang0122/sinyi-search-mcp", $PACKAGE)
+    $serverArgs = @($PACKAGE)
 } else {
     # 用 uv tool run 替代 uvx
     $serverCommand = $uvxPath

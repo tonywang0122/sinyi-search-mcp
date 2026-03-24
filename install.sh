@@ -73,7 +73,7 @@ with open('$CONFIG_FILE', 'r') as f:
     config = json.load(f)
 config.setdefault('mcpServers', {})['$SERVER_NAME'] = {
     'command': '$UVX_PATH',
-    'args': ['--from', 'git+https://github.com/tonywang0122/sinyi-search-mcp', '$PACKAGE']
+    'args': ['$PACKAGE']
 }
 with open('$CONFIG_FILE', 'w') as f:
     json.dump(config, f, indent=2)
@@ -87,7 +87,7 @@ with open('$CONFIG_FILE', 'r') as f:
     config = json.load(f)
 config.setdefault('mcpServers', {})['$SERVER_NAME'] = {
     'command': '$UVX_PATH',
-    'args': ['--from', 'git+https://github.com/tonywang0122/sinyi-search-mcp', '$PACKAGE']
+    'args': ['$PACKAGE']
 }
 with open('$CONFIG_FILE', 'w') as f:
     json.dump(config, f, indent=2)
@@ -101,7 +101,7 @@ else
   "mcpServers": {
     "$SERVER_NAME": {
       "command": "$UVX_PATH",
-      "args": ["--from", "git+https://github.com/tonywang0122/sinyi-search-mcp", "$PACKAGE"]
+      "args": ["$PACKAGE"]
     }
   }
 }
