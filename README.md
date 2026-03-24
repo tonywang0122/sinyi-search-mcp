@@ -1,6 +1,8 @@
 # 買屋快搜
 
-房屋物件搜尋 MCP Server — 讓 Claude 幫你找房子。
+房屋物件搜尋 MCP Server — 讓 AI 幫你找房子。
+
+支援 Claude Desktop / Codex CLI，以及所有相容 MCP 的 AI 工具。
 
 ## 一鍵安裝
 
@@ -24,7 +26,10 @@ irm https://raw.githubusercontent.com/tonywang0122/house-search-mcp/main/install
 > # 然後重跑安裝指令
 > ```
 
-自動偵測並設定：Claude Desktop（含 Store 版）+ Codex CLI。
+安裝腳本自動偵測並設定：
+- **Claude Desktop**（macOS / Windows 一般版 / Store 版）
+- **Codex CLI**（macOS / Windows 一般版 / Store 版）
+
 安裝完成後，重啟應用即可使用。
 
 ## 功能
@@ -34,7 +39,7 @@ irm https://raw.githubusercontent.com/tonywang0122/house-search-mcp/main/install
 
 ## 使用方式
 
-直接在 Claude 對話中說：
+在 AI 對話中直接說：
 
 - 「幫我找板橋三房 預算一千八」
 - 「台中西屯有什麼降價的三房大樓嗎」
@@ -45,18 +50,24 @@ irm https://raw.githubusercontent.com/tonywang0122/house-search-mcp/main/install
 如果一鍵安裝失敗，可以手動設定：
 
 1. 安裝 [uv](https://docs.astral.sh/uv/)
-2. 編輯 Claude Desktop 設定檔：
+
+2. **Claude Desktop** — 編輯設定檔：
    - macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
-   - Windows: `%APPDATA%\Claude\claude_desktop_config.json`
-3. 加入：
-```json
-{
-  "mcpServers": {
-    "買屋快搜": {
-      "command": "uvx",
-      "args": ["house-search-mcp"]
-    }
-  }
-}
-```
-4. 重啟 Claude Desktop
+   - Windows: `%APPDATA%\Claude\claude_desktop_config.json`（Store 版路徑不同，安裝腳本會自動偵測）
+   ```json
+   {
+     "mcpServers": {
+       "買屋快搜": {
+         "command": "uvx",
+         "args": ["house-search-mcp"]
+       }
+     }
+   }
+   ```
+
+3. **Codex CLI** — 執行指令：
+   ```bash
+   codex mcp add 買屋快搜 -- uvx house-search-mcp
+   ```
+
+4. 重啟應用
