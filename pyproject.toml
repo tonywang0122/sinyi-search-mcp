@@ -1,6 +1,6 @@
 [project]
 name = "house-search-mcp"
-version = "0.2.2"
+version = "0.3.0"
 description = "買屋快搜 — 房屋物件搜尋 MCP Server for Claude Desktop / Codex CLI"
 readme = "README.md"
 license = "MIT"

@@ -32,6 +32,14 @@ irm https://raw.githubusercontent.com/tonywang0122/house-search-mcp/main/install
 
 安裝完成後，重啟應用即可使用。
 
+## 升級
+
+```bash
+uvx --refresh house-search-mcp
+```
+
+然後重啟 Claude Desktop / Codex CLI。
+
 ## 功能
 
 - **house_search** — 搜尋物件列表（城市、行政區、房數、價格、坪數、屋齡等篩選）
@@ -67,7 +75,7 @@ irm https://raw.githubusercontent.com/tonywang0122/house-search-mcp/main/install
 
 3. **Codex CLI** — 執行指令：
    ```bash
-   codex mcp add 買屋快搜 -- uvx house-search-mcp
+   codex mcp add house-search -- uvx house-search-mcp
    ```
 
 4. 重啟應用
