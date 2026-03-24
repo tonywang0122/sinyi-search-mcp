@@ -82,10 +82,17 @@ try {
 Write-Host ""
 Write-Host "[Step 3/5] 找到 Claude Desktop 設定檔..." -ForegroundColor White
 
-$configDir = Join-Path $env:APPDATA "Claude"
+# 偵測 Store 版 vs 一般安裝版
+$storeConfig = Get-Item "$env:LOCALAPPDATA\Packages\Claude_*\LocalCache\Roaming\Claude" -ErrorAction SilentlyContinue
+if ($storeConfig) {
+    $configDir = $storeConfig.FullName
+    Write-Host "  [INFO] 偵測到 Microsoft Store 版 Claude Desktop" -ForegroundColor Yellow
+} else {
+    $configDir = Join-Path $env:APPDATA "Claude"
+    Write-Host "  [INFO] 偵測到一般安裝版 Claude Desktop" -ForegroundColor Yellow
+}
 $configFile = Join-Path $configDir "claude_desktop_config.json"
 
-Write-Host "  [INFO] APPDATA: $env:APPDATA" -ForegroundColor Yellow
 Write-Host "  [INFO] 設定檔目錄: $configDir" -ForegroundColor Yellow
 Write-Host "  [INFO] 設定檔路徑: $configFile" -ForegroundColor Yellow
 
