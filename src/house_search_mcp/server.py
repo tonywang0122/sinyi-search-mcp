@@ -7,7 +7,7 @@ from mcp.server.fastmcp import FastMCP
 
 from . import api
 
-mcp = FastMCP("house-search", instructions="""房屋物件搜尋工具。
+mcp = FastMCP("買屋快搜", instructions="""房屋物件搜尋工具。
 提供 house_search（搜尋物件列表）和 house_get_detail（查詢單一物件明細）。
 搜尋結果包含價格、坪數、格局、屋齡、標籤、關注人數等。
 物件明細包含座向、建築結構、經紀人賣點、周邊生活圈步行距離、管理費等。
