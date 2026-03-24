@@ -34,11 +34,13 @@ irm https://raw.githubusercontent.com/tonywang0122/house-search-mcp/main/install
 
 ## 升級
 
+開啟終端機（macOS: Terminal / Windows: PowerShell），貼上：
+
 ```bash
-uvx --refresh house-search-mcp
+uv cache clean house-search-mcp
 ```
 
-然後重啟 Claude Desktop / Codex CLI。
+然後重啟 Claude Desktop / Codex CLI，會自動下載最新版。
 
 ## 功能
 
