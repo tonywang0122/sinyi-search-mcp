@@ -208,28 +208,66 @@ def build_filter(params: dict) -> dict:
 # ── Format ───────────────────────────────────────────────────────────
 
 def format_item(obj: dict) -> dict:
+    """格式化搜尋列表中的單筆物件 — 完整對應 filterObject API 回傳欄位。"""
     house_no = obj.get("houseNo", "")
     return {
-        "id": house_no,
-        "name": obj.get("name"),
-        "address": obj.get("address"),
-        "age": obj.get("age"),
-        "type": [TYPE_NAMES.get(t, t) for t in (obj.get("houselandtype") or [])],
-        "price": obj.get("totalPrice"),
-        "price_original": obj.get("priceFirst"),
-        "discount_pct": obj.get("discount"),
-        "building_area": obj.get("areaBuilding"),
-        "main_area": obj.get("pingUsed"),
-        "layout": obj.get("totalLayout") or obj.get("layout"),
-        "floor": obj.get("floor"),
-        "total_floor": obj.get("totalfloor"),
-        "has_parking": obj.get("isParking", False),
-        "parking": obj.get("parking"),
-        "tags": [TAG_NAMES.get(str(t), str(t)) for t in (obj.get("tags") or [])],
-        "watchers": obj.get("threeMonthsClicks"),
-        "community": obj.get("commName"),
+        # ── 識別 ──
+        "id": house_no,                                        # 物件編號
+        "object_id": obj.get("objectId"),                      # 物件內部 ID
+        "object_type": obj.get("objectType"),                  # 物件類型碼（數字）
+        "kind": obj.get("kind"),                               # 物件種類
+        "status": obj.get("status"),                           # 物件狀態
+        "is_off": obj.get("isOff"),                            # 是否已下架
+        # ── 名稱 / 位置 ──
+        "name": obj.get("name"),                               # 物件名稱
+        "address": obj.get("address"),                         # 地址
+        "zip_code": obj.get("zipCode"),                        # 行政區郵遞區號
+        "community_id": obj.get("commId"),                     # 社區 ID
+        "community": obj.get("commName"),                      # 社區名稱
+        "latitude": obj.get("latitude"),                       # 緯度
+        "longitude": obj.get("longitude"),                     # 經度
+        # ── 類型 ──
+        "type": [TYPE_NAMES.get(t, t) for t in (obj.get("houselandtype") or [])],  # 物件型態（中文）
+        "type_raw": obj.get("houselandtype"),                  # 物件型態（原始代碼）
+        "type_show": obj.get("houselandtypeShow"),             # 物件型態（顯示用文字）
+        # ── 價格 ──
+        "price": obj.get("totalPrice"),                        # 總價（萬元）
+        "price_original": obj.get("priceFirst"),               # 原始開價（萬元）
+        "discount_pct": obj.get("discount"),                   # 降價幅度（%）
+        "unit_price": obj.get("uniPrice"),                     # 單價（萬/坪）
+        # ── 格局 / 樓層 ──
+        "layout": obj.get("totalLayout") or obj.get("layout"), # 格局（如 3房2廳2衛）
+        "add_layout": obj.get("addLayout"),                    # 加蓋格局
+        "floor": obj.get("floor"),                             # 所在樓層
+        "total_floor": obj.get("totalfloor"),                  # 總樓層數
+        "age": obj.get("age"),                                 # 屋齡（年）
+        # ── 面積 ──
+        "building_area": obj.get("areaBuilding"),              # 建物面積（坪）
+        "main_area": obj.get("pingUsed"),                      # 主建物面積（坪）
+        "land_area": obj.get("areaLand"),                      # 土地面積（坪）
+        # ── 特徵旗標 ──
+        "has_parking": obj.get("isParking", False),            # 是否有車位
+        "parking": obj.get("parking"),                         # 車位資訊
+        "has_balcony": obj.get("isHasBalcony"),                # 是否有陽台
+        "has_view": obj.get("isHasView"),                      # 是否有景觀
+        "has_video": obj.get("isHasVideo"),                    # 是否有影片
+        "has_3dvr": obj.get("Is3Dvr"),                         # 是否有 3D VR
+        "vr_3d": obj.get("3DVR"),                              # 3D VR 資訊
+        "is_similar": obj.get("isSimilar"),                    # 是否為相似物件
+        # ── 圖片 ──
+        "image": obj.get("image"),                             # 首圖 URL
+        "large_image": obj.get("largeImage"),                  # 大圖 URL
+        "image_tag": obj.get("imageTag"),                      # 圖片標籤
+        # ── 標籤 ──
+        "tags": [TAG_NAMES.get(str(t), str(t)) for t in (obj.get("tags") or [])],  # 標籤（中文）
+        "tags_raw": obj.get("tags"),                           # 標籤（原始 ID）
+        # ── 統計 / 其他 ──
+        "watchers": obj.get("threeMonthsClicks"),              # 近三月關注人數
+        "manager_id": obj.get("managerId"),                    # 管理者 ID
+        "group_company": obj.get("groupCompany"),              # 集團公司
+        # ── 連結 ──
         "detail_url": f"https://www.sinyi.com.tw/buy/house/{house_no}" if house_no else None,
-        "zip_code": obj.get("zipCode"),
+        "share_url": obj.get("shareURL"),                      # 分享連結
     }
 
 
@@ -269,108 +307,111 @@ def _format_agent(agent: dict | None) -> dict | None:
 
 
 def format_object_detail(content: dict, detail: dict) -> dict:
-    """合併 getObjectContent + getObjectDetail — 100% 欄位。"""
+    """合併 getObjectContent + getObjectDetail — 完整對應所有 API 回傳欄位。"""
     house_no = content.get("houseNo", "")
     d = detail.get("detail") or {}
 
     return {
-        # ── 基本 ──
-        "id": house_no,
-        "name": content.get("name"),
-        "address": content.get("address"),
-        "city_id": content.get("cityId"),
-        "city": content.get("cityName"),
-        "zip_code": content.get("zipCode"),
-        "district": content.get("zipName"),
-        "community_id": content.get("commId"),
-        "community": content.get("commName"),
-        "object_type": content.get("objectType"),
-        "type": [TYPE_NAMES.get(t, t) for t in (content.get("houselandtype") or [])],
-        "type_raw": content.get("houselandtype"),
+        # ── 基本識別 ──
+        "id": house_no,                                        # 物件編號
+        "name": content.get("name"),                           # 物件名稱
+        "address": content.get("address"),                     # 地址
+        "city_id": content.get("cityId"),                      # 城市代碼
+        "city": content.get("cityName"),                       # 城市名稱
+        "zip_code": content.get("zipCode"),                    # 行政區郵遞區號
+        "district": content.get("zipName"),                    # 行政區名稱
+        "community_id": content.get("commId"),                 # 社區 ID
+        "community": content.get("commName"),                  # 社區名稱
+        "object_type": content.get("objectType"),              # 物件類型碼
+        "type": [TYPE_NAMES.get(t, t) for t in (content.get("houselandtype") or [])],  # 型態（中文）
+        "type_raw": content.get("houselandtype"),              # 型態（原始代碼）
+        "type_show": content.get("houselandtypeShow"),         # 型態（顯示用文字）
         # ── 價格 ──
-        "price": content.get("totalPrice"),
-        "price_original": content.get("priceFirst"),
-        "discount_pct": content.get("discount"),
-        "unit_price": content.get("uniPrice"),
-        "land_unit_price": content.get("landUniprice"),
+        "price": content.get("totalPrice"),                    # 總價（萬元）
+        "price_original": content.get("priceFirst"),           # 原始開價（萬元）
+        "discount_pct": content.get("discount"),               # 降價幅度（%）
+        "unit_price": content.get("uniPrice"),                 # 單價（萬/坪）
+        "land_unit_price": content.get("landUniprice"),        # 土地單價（萬/坪）
         # ── 格局 ──
-        "layout": content.get("totalLayout") or content.get("layout"),
-        "roomplus": content.get("roomplus"),
-        "hallplus": content.get("hallplus"),
-        "bathroomplus": content.get("bathroomplus"),
-        "openroomplus": content.get("openroomplus"),
-        "floor": content.get("floor"),
-        "total_floor": content.get("floors"),
-        "age": content.get("age"),
+        "layout": content.get("totalLayout") or content.get("layout"),  # 格局（如 3房2廳2衛）
+        "roomplus": content.get("roomplus"),                   # 房數
+        "hallplus": content.get("hallplus"),                   # 廳數
+        "bathroomplus": content.get("bathroomplus"),           # 衛浴數
+        "openroomplus": content.get("openroomplus"),           # 開放式房間數
+        "floor": content.get("floor"),                         # 所在樓層
+        "total_floor": content.get("floors"),                  # 總樓層數
+        "age": content.get("age"),                             # 屋齡（年）
         # ── 面積 ──
-        "building_area": content.get("areaBuilding"),
-        "main_area": content.get("pingUsed"),
-        "land_area": content.get("areaLand"),
-        "area_detail": content.get("areaInfo"),
-        "house_size": content.get("houseSize"),
-        "has_balcony": content.get("isHasBalcony"),
+        "building_area": content.get("areaBuilding"),          # 建物面積（坪）
+        "main_area": content.get("pingUsed"),                  # 主建物面積（坪）
+        "land_area": content.get("areaLand"),                  # 土地面積（坪）
+        "area_detail": content.get("areaInfo"),                # 面積明細
+        "house_size": content.get("houseSize"),                # 房屋大小分類
+        "has_balcony": content.get("isHasBalcony"),            # 是否有陽台
         # ── 座向 ──
-        "house_front": content.get("houseFront"),
-        "building_front": content.get("buildingFront"),
-        "window_front": content.get("windowFront"),
-        "direction_land": content.get("directionland"),
+        "house_front": content.get("houseFront"),              # 房屋座向
+        "building_front": content.get("buildingFront"),        # 大樓座向
+        "window_front": content.get("windowFront"),            # 窗戶座向
+        "direction_land": content.get("directionland"),        # 土地座向
         # ── 特徵 ──
-        "is_side_unit": content.get("sfside", False),
-        "has_darkroom": content.get("sfdarkroom", False),
-        "management": content.get("hasmanager"),
-        "monthly_fee": content.get("monthlyFee"),
+        "is_side_unit": content.get("sfside", False),          # 是否為邊間
+        "has_darkroom": content.get("sfdarkroom", False),      # 是否有暗房
+        "management": content.get("hasmanager"),               # 管理方式
+        "monthly_fee": content.get("monthlyFee"),              # 月管理費
         # ── 車位 ──
-        "has_parking": content.get("isParking"),
-        "parking": content.get("parking"),
-        # ── 建築結構 (from detail) ──
-        "structure": d.get("buildingStructure"),
-        "wall": d.get("wallStructure"),
-        "families_per_floor": d.get("family"),
-        "purpose": d.get("purpose"),
-        "zoning": d.get("partition"),
-        "detail_other": d.get("other"),
-        "detail_notice": d.get("notice"),
+        "has_parking": content.get("isParking"),               # 是否有車位
+        "parking": content.get("parking"),                     # 車位詳情
+        # ── 建築結構 (from getObjectDetail) ──
+        "structure": d.get("buildingStructure"),               # 建築結構
+        "wall": d.get("wallStructure"),                        # 牆壁結構
+        "families_per_floor": d.get("family"),                 # 每層戶數
+        "purpose": d.get("purpose"),                           # 用途
+        "zoning": d.get("partition"),                          # 使用分區
+        "detail_other": d.get("other"),                        # 其他說明
+        "detail_notice": d.get("notice"),                      # 注意事項
         # ── 經紀人賣點 ──
-        "description": detail.get("description", []),
+        "description": detail.get("description", []),          # 經紀人賣點描述列表
         # ── 標籤 ──
-        "tags": [TAG_NAMES.get(str(t), str(t)) for t in (detail.get("tags") or [])],
-        "tags_raw": detail.get("tags"),
-        "house_spec_tags": detail.get("houseSpecTags"),
-        "house_facility_tags": detail.get("houseFacilityTags"),
-        "house_life_tags": detail.get("houseLifeTags"),
-        "house_feature_tags": detail.get("houseFeatureTags"),
+        "tags": [TAG_NAMES.get(str(t), str(t)) for t in (detail.get("tags") or [])],  # 標籤（中文）
+        "tags_raw": detail.get("tags"),                        # 標籤（原始 ID）
+        "house_spec_tags": detail.get("houseSpecTags"),        # 房屋規格標籤
+        "house_facility_tags": detail.get("houseFacilityTags"),# 設施標籤
+        "house_life_tags": detail.get("houseLifeTags"),        # 生活機能標籤
+        "house_feature_tags": detail.get("houseFeatureTags"),  # 特色標籤
         # ── 圖片 & 媒體 ──
-        "images": content.get("images"),
-        "layout_image": content.get("layoutImage"),
-        "layout_image_3d": content.get("layoutImage3D"),
-        "map_image": content.get("map"),
-        "vr_type": content.get("vrType"),
-        "vr_url": content.get("vrUrl"),
-        "vr_demo_url": content.get("vrDemoUrl"),
-        "vr_image": content.get("vrImgUrl"),
-        "ai_tour": content.get("aiTour"),
-        "ai_tour_url": content.get("aiTourURL"),
-        "video_url": content.get("videoUrl"),
-        # ── 語音導覽 (from detail) ──
-        "audio_list": detail.get("audioList"),
-        "audio_count": detail.get("audioCount"),
+        "images": content.get("images"),                       # 物件照片 URL 列表
+        "layout_image": content.get("layoutImage"),            # 格局圖 URL
+        "layout_image_3d": content.get("layoutImage3D"),       # 3D 格局圖 URL
+        "map_image": content.get("map"),                       # 地圖圖片 URL
+        "vr_type": content.get("vrType"),                      # VR 類型
+        "vr_url": content.get("vrUrl"),                        # VR 看屋連結
+        "vr_demo_url": content.get("vrDemoUrl"),               # VR 體驗連結
+        "vr_image": content.get("vrImgUrl"),                   # VR 預覽圖 URL
+        "ai_tour": content.get("aiTour"),                      # AI 導覽旗標
+        "ai_tour_url": content.get("aiTourURL"),               # AI 導覽連結
+        "video_url": content.get("videoUrl"),                  # 影片 URL
+        "enable_ai_clear": content.get("enableAIClear"),       # AI 清除功能旗標
+        # ── 語音導覽 (from getObjectDetail) ──
+        "audio_list": detail.get("audioList"),                 # 語音導覽列表
+        "audio_count": detail.get("audioCount"),               # 語音導覽數量
         # ── 生活圈 ──
-        "nearby": _extract_nearby(detail.get("lifeInfo") or []),
-        "life_info_raw": detail.get("lifeInfo"),
-        "utility_life_info": detail.get("utilitylifeInfo"),
+        "nearby": _extract_nearby(detail.get("lifeInfo") or []),  # 周邊生活圈（整理後）
+        "life_info_raw": detail.get("lifeInfo"),               # 周邊生活圈（原始資料）
+        "utility_life_info": detail.get("utilitylifeInfo"),    # 公用設施生活圈
         # ── 連結 ──
         "detail_url": f"https://www.sinyi.com.tw/buy/house/{house_no}" if house_no else None,
-        "share_url": content.get("shareURL"),
+        "share_url": content.get("shareURL"),                  # 分享連結
         # ── 座標 ──
-        "latitude": content.get("latitude"),
-        "longitude": content.get("longitude"),
+        "latitude": content.get("latitude"),                   # 緯度
+        "longitude": content.get("longitude"),                 # 經度
         # ── 統計 ──
-        "watchers": content.get("threeMonthsClicks"),
-        "first_listed": content.get("firstDisplay"),
-        "is_same_trade": content.get("isSameTrade"),
+        "watchers": content.get("threeMonthsClicks"),          # 近三月關注人數
+        "first_listed": content.get("firstDisplay"),           # 首次上架日期
+        "is_same_trade": content.get("isSameTrade"),           # 是否同業物件
         # ── 經紀人 ──
-        "agent": _format_agent(content.get("agent")),
-        "agent2": _format_agent(content.get("agent2")),
+        "agent": _format_agent(content.get("agent")),          # 主要經紀人
+        "agent2": _format_agent(content.get("agent2")),        # 次要經紀人
+        "agent_default_tab": content.get("agentDefaultTab"),   # 經紀人預設分頁
         # ── 門市 ──
-        "store": content.get("store"),
+        "store": content.get("store"),                         # 門市資訊
     }

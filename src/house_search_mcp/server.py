@@ -9,9 +9,19 @@ from . import api
 
 mcp = FastMCP("買屋快搜", instructions="""房屋物件搜尋工具。
 提供 house_search（搜尋物件列表）和 house_get_detail（查詢單一物件明細）。
-搜尋結果包含價格、坪數、格局、屋齡、標籤、關注人數等。
-物件明細包含座向、建築結構、經紀人賣點、周邊生活圈步行距離、管理費、
-物件照片 URL、格局圖、VR 看屋連結、地圖圖片、語音導覽、經紀人完整資訊、經緯度等所有公開欄位。
+
+house_search 回傳：
+- 統計摘要：總筆數、新上架數、新降價數、熱門數、熱門成交數、最佳價格數
+- 每筆物件：名稱、地址、座標、總價、單價、原始開價、降價幅度、格局、加蓋格局、
+  樓層、屋齡、建物/主建物/土地面積、車位、陽台/景觀/影片/3DVR 旗標、
+  首圖/大圖 URL、標籤、關注人數、社區、分享連結
+
+house_get_detail 回傳：
+- 完整價格（總價/單價/土地單價/開價/降幅）、詳細格局（房/廳/衛/開放式）、
+  座向（房屋/大樓/窗戶/土地）、建築結構（結構/牆壁/每層戶數/用途/分區）、
+  面積明細、管理方式與月管理費、經紀人賣點描述、
+  物件照片 URL 列表、格局圖、3D 格局圖、地圖圖片、VR 看屋連結、AI 導覽、
+  影片 URL、語音導覽、周邊生活圈步行距離、經紀人完整資訊、門市、經緯度座標等所有公開欄位。
 """)
 
 
@@ -34,6 +44,13 @@ def house_search(
     page_size: int = 20,
 ) -> str:
     """搜尋房屋物件列表。
+
+    回傳結構：
+    - total / page / page_size / page_count：分頁資訊
+    - newin_cnt / newprice_cnt / hot_cnt / hot_deal_cnt / bestprice_cnt：各類統計數
+    - items[]：物件列表，每筆包含 id、名稱、地址、座標、總價、單價、原始開價、
+      降價幅度、格局、加蓋格局、樓層、屋齡、建物/主建物/土地面積、車位、
+      陽台/景觀/影片/3DVR 旗標、首圖/大圖 URL、標籤、關注人數、社區、分享連結等
 
     Args:
         city: 城市代碼。Taipei=台北市, NewTaipei=新北市, Taoyuan=桃園市,
@@ -87,10 +104,18 @@ def house_search(
 
     total = data.get("totalCnt", 0)
     result = {
-        "total": total,
-        "page": page,
-        "page_size": page_size,
-        "page_count": math.ceil(total / page_size) if total > 0 else 0,
+        # ── 分頁資訊 ──
+        "total": total,                                        # 搜尋結果總筆數
+        "page": page,                                          # 目前頁次
+        "page_size": page_size,                                # 每頁筆數
+        "page_count": math.ceil(total / page_size) if total > 0 else 0,  # 總頁數
+        # ── 各類統計數（依搜尋條件） ──
+        "newin_cnt": data.get("newinCnt"),                     # 新上架物件數
+        "newprice_cnt": data.get("newpriceCnt"),               # 新降價物件數
+        "hot_cnt": data.get("hotCnt"),                         # 熱門物件數
+        "hot_deal_cnt": data.get("hotDealCnt"),                # 熱門成交物件數
+        "bestprice_cnt": data.get("bestpriceCnt"),             # 最佳價格物件數
+        # ── 物件列表 ──
         "items": [api.format_item(o) for o in (data.get("object") or [])],
     }
     return json.dumps(result, ensure_ascii=False, indent=2)
@@ -100,11 +125,21 @@ def house_search(
 def house_get_detail(house_no: str) -> str:
     """查詢單一房屋物件的完整明細。
 
-    回傳所有公開資訊：價格、坪數、格局、座向、建築結構、經紀人賣點描述、
-    周邊生活圈步行距離、管理方式、車位詳情、月管理費、
-    物件照片 URL（images）、格局圖（layout_image）、VR 看屋連結（vr_url）、
-    地圖圖片（map_image）、語音導覽（audio_list）、經紀人完整資訊、
-    經緯度座標等。
+    回傳所有公開資訊，包含：
+    - 基本：名稱、地址、城市、行政區、社區、物件類型
+    - 價格：總價、單價、土地單價、原始開價、降價幅度
+    - 格局：房/廳/衛/開放式數量、所在樓層、總樓層、屋齡
+    - 面積：建物/主建物/土地面積、面積明細、是否有陽台
+    - 座向：房屋/大樓/窗戶/土地座向
+    - 特徵：邊間、暗房、管理方式、月管理費、車位詳情
+    - 建築結構：結構、牆壁、每層戶數、用途、使用分區、注意事項
+    - 經紀人賣點描述（description 列表）
+    - 標籤：規格/設施/生活機能/特色標籤
+    - 媒體：照片 URL 列表、格局圖、3D 格局圖、地圖圖片、VR 看屋連結、
+      AI 導覽、影片 URL、語音導覽
+    - 生活圈：周邊交通/學校/市場/醫療步行距離
+    - 經紀人：姓名、電話、門市、照片等完整資訊
+    - 其他：經緯度座標、關注人數、首次上架日期、分享連結
 
     Args:
         house_no: 物件編號（如 '1083GN'），從 house_search 結果的 id 欄位取得。
