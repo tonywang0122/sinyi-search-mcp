@@ -87,7 +87,7 @@ try {
     $newServer = [PSCustomObject]@{ command = $serverCommand; args = $serverArgs }
 
     if (Test-Path $configFile) {
-        $config = Get-Content $configFile -Raw | ConvertFrom-Json
+        $config = [System.IO.File]::ReadAllText($configFile, [System.Text.Encoding]::UTF8) | ConvertFrom-Json
         if (-not $config.mcpServers) {
             $config | Add-Member -NotePropertyName "mcpServers" -NotePropertyValue ([PSCustomObject]@{})
         }
@@ -96,10 +96,12 @@ try {
         } else {
             $config.mcpServers | Add-Member -NotePropertyName $CLAUDE_SERVER_NAME -NotePropertyValue $newServer
         }
-        $config | ConvertTo-Json -Depth 10 | Set-Content $configFile -Encoding UTF8
+        $json = $config | ConvertTo-Json -Depth 10
+        [System.IO.File]::WriteAllText($configFile, $json, [System.Text.UTF8Encoding]::new($false))
     } else {
-        @{ mcpServers = @{ $CLAUDE_SERVER_NAME = @{ command = $serverCommand; args = $serverArgs } } } |
-            ConvertTo-Json -Depth 10 | Set-Content $configFile -Encoding UTF8
+        $json = @{ mcpServers = @{ $CLAUDE_SERVER_NAME = @{ command = $serverCommand; args = $serverArgs } } } |
+            ConvertTo-Json -Depth 10
+        [System.IO.File]::WriteAllText($configFile, $json, [System.Text.UTF8Encoding]::new($false))
     }
     Write-Host "  [OK] Claude Desktop 設定完成: $configFile" -ForegroundColor Green
     $installed += "Claude Desktop"
