@@ -1,0 +1,34 @@
+[project]
+name = "house-search-tools"
+version = "0.4.0"
+description = "買屋快搜 — 資料爬取 & 市場分析工具（需搭配 house-search-mcp）"
+readme = "../README.md"
+license = "MIT"
+requires-python = ">=3.11"
+keywords = ["real-estate", "house-search", "crawler", "report", "sinyi"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: End Users/Desktop",
+    "Topic :: Office/Business",
+    "Programming Language :: Python :: 3",
+]
+
+# 相依 house-search-mcp（共用 api.py / crawler.py / report.py）
+dependencies = [
+    "house-search-mcp>=0.4.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/tonywang0122/house-search-mcp"
+Repository = "https://github.com/tonywang0122/house-search-mcp"
+
+[project.scripts]
+house-search-crawler = "house_search_mcp.crawler:main"
+house-search-report  = "house_search_mcp.report:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/house_search_tools"]

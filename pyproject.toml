@@ -1,17 +1,19 @@
 [project]
 name = "house-search-mcp"
-version = "0.3.1"
-description = "買屋快搜 — 房屋物件搜尋 MCP Server for Claude Desktop / Codex CLI"
+version = "0.4.0"
+description = "買屋快搜 — 信義房屋物件搜尋 MCP Server 及市場分析工具"
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.11"
-keywords = ["mcp", "real-estate", "house-search", "claude", "codex"]
+keywords = ["mcp", "real-estate", "house-search", "claude", "sinyi"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: End Users/Desktop",
     "Topic :: Office/Business",
     "Programming Language :: Python :: 3",
 ]
+
+# ── 核心相依（MCP Server） ──
 dependencies = [
     "mcp>=1.0.0",
     "httpx>=0.27.0",
